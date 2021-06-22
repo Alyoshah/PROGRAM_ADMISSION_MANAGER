@@ -335,5 +335,5 @@ void detailed_view(FILE * file) {
 }
 
 void auto_accept(FILE * file) {
-     printf("WORKING");
+     printf("WORKING"); // need to think about this later
 }
