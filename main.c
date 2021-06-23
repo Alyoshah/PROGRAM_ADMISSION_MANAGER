@@ -337,3 +337,8 @@ void detailed_view(FILE * file) {
 void auto_accept(FILE * file) {
      printf("WORKING"); // need to think about this later
 }
+
+
+// https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
+// https://www.tutorialspoint.com/c_standard_library/c_function_fwrite.htm
+// https://www.eecis.udel.edu/~sprenkle/cisc105/making_columns.html
