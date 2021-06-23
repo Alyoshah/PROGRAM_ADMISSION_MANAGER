@@ -1,6 +1,9 @@
 #include <stdio.h>
+
 #include <string.h>
+
 #include <time.h>
+
 #include <stdlib.h>
 
 
@@ -9,9 +12,6 @@
 // - [x] read from file
 // - [x] read individual file info
 // - []AUTO ACCEPT APPLICATIONS 
- 
-
-
 
 // Program Admission Manager
 
@@ -23,14 +23,21 @@ void auto_accept(FILE * file);
 
 #define APP struct Form
 
-struct Birth //birth info
+struct Birth // birth info
 {
     int year;
     int month;
     int day;
 };
 
-struct Subs // subject info
+struct app_date // save application date
+{
+    int year;
+    int month;
+    int day;
+};
+
+struct Subjects // subject info
 {
 
     int grade;
@@ -51,14 +58,13 @@ struct Form // application form
     char address[30];
     int sub_count;
     int age;
-    int appy;
-    int appm;
-    int appd;
     char status[10];
     char gender[20];
-    struct Program pgm;
-    struct Birth dob;
-    struct Subs subjects[50];
+    
+    struct Program pgm; // program selection struct
+    struct Birth dob; // dob struct
+    struct app_date app; // save the date applied
+    struct Subjects subs[50]; // sub struct array to store subjects and grade
 
 };
 
@@ -68,7 +74,6 @@ int main()
 {
 
     int choice;
-    
 
     FILE * file;
 
@@ -85,33 +90,41 @@ int main()
     while (1) {
 
         // main menu loop
+        printf("\n+--------------------------------------------------+");
+        printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| ADMISSIONS MANAGER                               |");
+        printf("\n+--------------------------------------------------+");
         printf("\n\n");
-        printf("\n+------------------------------------------------+");
-        printf("\n| MENU                                           |");
-        printf("\n+------------------------------------------------+");
-        printf("\n| 1.WRITE A NEW ENTRY                            |");
-        printf("\n+------------------------------------------------+");
-        printf("\n| 2.READ ALL ENTRIES                             |");
-        printf("\n+------------------------------------------------+");
-        printf("\n| 3.VIEW DETAILED INFO ON A SINGLE ENTRY         |");
-        printf("\n+------------------------------------------------+");
-        printf("\n| 4.EXIT                                         |");
-        printf("\n+------------------------------------------------+");
-        printf("\nChoice : ");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| MENU                                             |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 1.APPLY                                          |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 2.READ ALL ENTRIES                               |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 3.VIEW DETAILED INFO ON A SINGLE ENTRY           |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 4.EXIT                                           |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n\nChoice : ");
 
         scanf("%d", & choice);
         fflush(stdin);
 
         switch (choice) {
         case 1:
+            system("CLS");
             write_file(file);
             break;
 
         case 2:
+            system("CLS");
             read_file(file);
             break;
 
         case 3:
+
             detailed_view(file);
             break;
 
@@ -131,12 +144,19 @@ int main()
 
 //write data to file
 void write_file(FILE * file) {
+
     int m, d, y;
     int i;
     APP a;
 
     srand(time(NULL));
-    int id = rand() % 100;
+    int id = rand() % 999; 
+    // not the greatest way to generate an id 
+    // a proper way would be to save every number generated and compare the news to the old ones 
+    // and generate another if it matches
+    // to ensure every number is unique
+    
+    
 
     fseek(file, 0, SEEK_END); // goto END of file
 
@@ -152,7 +172,7 @@ void write_file(FILE * file) {
 
     a.id = id;
 
-    printf("\nENTER FIRST NAME:");
+    printf("\nENTER NAME:");
     fgets(a.name, 20, stdin);
     fflush(stdin);
     a.name[strlen(a.name) - 1] = '\0'; // remove new line from buffer
@@ -183,9 +203,9 @@ void write_file(FILE * file) {
     fflush(stdin);
 
     //set date in form
-    a.appy = y, a.appm = m, a.appd = d;
+    a.app.year = y, a.app.month = m, a.app.day = d;
     //set age
-    a.age = (int) a.appy - a.dob.year;
+    a.age = (int) a.app.year - a.dob.year;
 
     //SET STATUS
     strcpy(a.status, "PENDING");
@@ -193,11 +213,11 @@ void write_file(FILE * file) {
     for (i = 0; i < a.sub_count; i++) {
 
         printf("\n%d.SUBJECT NAME:", i + 1);
-        scanf("%[^\n]s", & a.subjects[i].sname); // tmp// need to use somthing else instead of scanf        
+        scanf("%[^\n]s", & a.subs[i].sname); // tmp// need to use somthing else instead of scanf        
         fflush(stdin);
 
         printf("\n%d.ENTER GRADE:", i + 1);
-        scanf("%d", & a.subjects[i].grade);
+        scanf("%d", & a.subs[i].grade);
         fflush(stdin);
 
     }
@@ -220,17 +240,23 @@ void write_file(FILE * file) {
 
     fwrite( & a, sizeof(a), 1, file); //write info to file
 
-    if (fwrite != 0) {
-        printf("\nDONE !\n");
+    if (fwrite != 0) { //print message if file written or not
+
+        printf("\n+------------------------------------------------+");
+        printf("\n| DONE                                           |");
+        printf("\n+------------------------------------------------+");
+
     } else {
-        printf("\nERROR !\n");
+        printf("\n+------------------------------------------------+");
+        printf("\n| ERROR                                          |");
+        printf("\n+------------------------------------------------+");
     }
 }
 
 // read data from file
 void read_file(FILE * file) {
 
-    system("CLS");
+    // system("CLS");
     APP a;
 
     fseek(file, 0, SEEK_SET);
@@ -248,7 +274,7 @@ void read_file(FILE * file) {
         char a_date[20];
         char b_date[20];
 
-        sprintf(a_date, "%i-%i-%i", a.appy, a.appm, a.appd);
+        sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
         sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
 
         printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a.status, a_date);
@@ -270,8 +296,12 @@ void detailed_view(FILE * file) {
 
     while (1) {
 
-        printf("\nEnter ID:");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| SEARCH                                           |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n\nEnter ID : ");
         scanf("%d", & srch_id);
+
         fflush(stdin);
 
         rewind(file);
@@ -287,6 +317,8 @@ void detailed_view(FILE * file) {
         }
 
         if (found == 1) {
+
+            system("CLS");
 
             char b_date[20];
             sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
@@ -309,7 +341,7 @@ void detailed_view(FILE * file) {
 
             for (i = 0; i < a.sub_count; i++) {
 
-                printf("\n| %-20s    %1d                        |", a.subjects[i].sname, a.subjects[i].grade);
+                printf("\n| %-20s    %1d                        |", a.subs[i].sname, a.subs[i].grade);
                 printf("\n+--------------------------------------------------+");
             }
             printf("\n");
@@ -323,16 +355,11 @@ void detailed_view(FILE * file) {
             printf("\n| IS                                               |");
             printf("\n+--------------------------------------------------+");
 
-
-
-
-
-
-
-        } 
-        else {
-            printf("\nERROR");
-            }
+        } else {
+            printf("\n+--------------------------------------------------+");
+            printf("\n| ERROR NO APPLICANT FOUND FOR THAT ID             |");
+            printf("\n+--------------------------------------------------+");
+        }
 
         printf("\n\n\n");
         system("pause");
@@ -341,9 +368,8 @@ void detailed_view(FILE * file) {
 }
 
 void auto_accept(FILE * file) {
-     printf("WORKING"); // need to think about this later
+    printf("WORKING"); // need to think about this later
 }
-
 
 // https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
 // https://www.tutorialspoint.com/c_standard_library/c_function_fwrite.htm
