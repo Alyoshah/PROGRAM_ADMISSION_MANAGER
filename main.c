@@ -1,13 +1,19 @@
 #include <stdio.h>
-
 #include <string.h>
-
 #include <time.h>
-
 #include <stdlib.h>
 
 
-//Program Admission Manager
+// TODO:
+// - [x] write to file
+// - [x] read from file
+// - [x] read individual file info
+// - []AUTO ACCEPT APPLICATIONS 
+ 
+
+
+
+// Program Admission Manager
 
 FILE * file;
 void read_file(FILE * file);
@@ -62,7 +68,7 @@ int main()
 {
 
     int choice;
-    //Applicant a;
+    
 
     FILE * file;
 
