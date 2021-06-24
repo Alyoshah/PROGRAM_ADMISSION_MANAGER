@@ -406,14 +406,53 @@ void detailed_view(FILE * file) {
             printf("\n+--------------------------------------------------+");
         }
 
+        int ach;
+
+        while (1)
+
+        {   printf("\n");
+            printf("\n");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| APPLICATION PROCESSING MENU                      |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 1:AUTOMATICALLY ACCEPT INTO APPROPRIATE PROGRAM  |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 2.EXIT                                           |");
+            printf("\n+--------------------------------------------------+");
+
+            do {
+                printf("\nCHOICE : ");
+
+            } while (scanf("%d", & ach) != 1 || ach < 0 || ach > 2);
+            fflush(stdin);
+
+            switch (ach)
+            {
+            case 1:
+                printf("\naccepted\n");
+                break;
+
+            case 2:
+                break;
+            
+            default:
+                break;
+            }
+            //system("pause");
+            break;
+
+            
+        }
+                
+
         printf("\n\n\n");
-        system("pause");
+        //system("pause");
         
         break;
     }
 }
 
-void auto_accept(FILE * file,FILE * file_count;) {
+void auto_accept(FILE * file,FILE * file_count) {
 
 
 
