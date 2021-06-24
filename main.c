@@ -9,13 +9,17 @@
 // - [x] read individual file info
 
 // Program Admission Manager
+
 FILE *file;
 FILE *file_count;
 
 void read_file(FILE *file);
+
 void write_file(FILE *file);
+
 void detailed_view(FILE *file);
-void auto_accept(FILE *file, FILE *file_count);
+
+void create_limits(FILE *file_count);
 
 #define APP struct Form
 
@@ -72,13 +76,23 @@ struct Form // application form
     struct Subjects subs[50]; // sub struct array to store subjects and grade
 };
 
-// main
+#define p_lim struct program_limits
+
+struct program_limits
+{
+    int cs_limit;
+    int it_limit;
+    int is_limit;
+};
+
+// main'
 int main()
 {
 
     int choice;
 
     FILE *file;
+    FILE *file_count;
 
     if ((file = fopen("DB.bin", "rb+")) == NULL) //create file if it doesn't exists or throw an error if it can't be created
     {
@@ -88,8 +102,13 @@ int main()
             return 0;
         }
     }
-
-    // system("CLS");
+    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) //create file if it doesn't exists or throw an error if it can't be created
+    {
+        if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
+        {
+            printf("\n\t\tERROR CREATING FILE!!");
+        }
+    }
 
     while (1)
     {
@@ -137,6 +156,10 @@ int main()
         case 4:
             fclose(file);
             return 0;
+            break;
+
+        case 5:
+            create_limits(file_count);
             break;
 
         default:
@@ -472,10 +495,28 @@ void detailed_view(FILE *file)
     }
 }
 
-void auto_accept(FILE *file, FILE *file_count)
+void create_limits(FILE *file_count)
+
 {
 
-    printf("WORKING"); // need to think about this later
+    p_lim pl;
+
+    rewind(file_count);
+    printf("\n ENTER APPLICAION LIMIT FOR CS : ");
+    scanf("%d", &pl.cs_limit);
+    fflush(stdin);
+
+    printf("\n ENTER APPLICAION LIMIT FOR IT : ");
+    scanf("%d", &pl.it_limit);
+    fflush(stdin);
+
+    printf("\n ENTER APPLICAION LIMIT FOR IS : ");
+    scanf("%d", &pl.is_limit);
+    fflush(stdin);
+
+    fwrite(&pl, sizeof(pl), 1, file_count);
+
+    fclose(file_count);
 }
 
 // https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
