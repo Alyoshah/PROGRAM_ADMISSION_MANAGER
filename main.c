@@ -363,10 +363,10 @@ void detailed_view(FILE *file)
         printf("\n+--------------------------------------------------+");
         printf("\n\nEnter ID : ");
         scanf("%d", &srch_id);
-
         fflush(stdin);
 
         rewind(file);
+
         while (fread(&a, sizeof(a), 1, file) == 1)
         {
 
@@ -408,6 +408,7 @@ void detailed_view(FILE *file)
                 printf("\n| %-20s    %1d                        |", a.subs[i].sname, a.subs[i].grade);
                 printf("\n+--------------------------------------------------+");
             }
+
             printf("\n");
             printf("\n+--------------------------------------------------+");
             printf("\n| PROGRAM                 APPLICATION STATUS       |");
@@ -428,44 +429,44 @@ void detailed_view(FILE *file)
 
         int ach;
 
-        while (1)
+        // while (1) // testing
 
-        {
-            printf("\n");
-            printf("\n");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| APPLICATION PROCESSING MENU                      |");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| 1:AUTOMATICALLY ACCEPT INTO APPROPRIATE PROGRAM  |");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| 2.EXIT                                           |");
-            printf("\n+--------------------------------------------------+");
+        // {
+        //     printf("\n");
+        //     printf("\n");
+        //     printf("\n+--------------------------------------------------+");
+        //     printf("\n| APPLICATION PROCESSING MENU                      |");
+        //     printf("\n+--------------------------------------------------+");
+        //     printf("\n| 1:AUTOMATICALLY ACCEPT INTO APPROPRIATE PROGRAM  |");
+        //     printf("\n+--------------------------------------------------+");
+        //     printf("\n| 2.EXIT                                           |");
+        //     printf("\n+--------------------------------------------------+");
 
-            do
-            {
-                printf("\nCHOICE : ");
+        //     do
+        //     {
+        //         printf("\nCHOICE : ");
 
-            } while (scanf("%d", &ach) != 1 || ach < 0 || ach > 2);
-            fflush(stdin);
+        //     } while (scanf("%d", &ach) != 1 || ach < 0 || ach > 2);
+        //     fflush(stdin);
 
-            switch (ach)
-            {
-            case 1:
-                printf("\naccepted\n");
-                break;
+        //     switch (ach)
+        //     {
+        //     case 1:
+        //         printf("\naccepted\n");
+        //         break;
 
-            case 2:
-                break;
+        //     case 2:
+        //         break;
 
-            default:
-                break;
-            }
-            //system("pause");
-            break;
-        }
+        //     default:
+        //         break;
+        //     }
+        //     //system("pause");
+        //     break;
+        // }
 
         printf("\n\n\n");
-        //system("pause");
+        system("pause");
 
         break;
     }
