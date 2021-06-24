@@ -1,25 +1,24 @@
 #include <stdio.h>
-
 #include <string.h>
-
 #include <time.h>
-
 #include <stdlib.h>
 
 
-// TODO:
+// TODO:-[]AUTO ACCEPT APPLICATIONS 
 // - [x] write to file
 // - [x] read from file
 // - [x] read individual file info
-// - []AUTO ACCEPT APPLICATIONS 
+
 
 // Program Admission Manager
-
 FILE * file;
+FILE * file_count;
+
+
 void read_file(FILE * file);
 void write_file(FILE * file);
 void detailed_view(FILE * file);
-void auto_accept(FILE * file);
+void auto_accept(FILE * file,FILE * file_count;);
 
 #define APP struct Form
 
@@ -51,6 +50,14 @@ struct Program // programs available
     int is;
 };
 
+struct application_status {
+
+    char cs[20];
+    char it[20];
+    char is[20];
+
+};
+
 struct Form // application form
 {
     int id;
@@ -60,7 +67,8 @@ struct Form // application form
     int age;
     char status[10];
     char gender[20];
-    
+
+    struct application_status app_stat;
     struct Program pgm; // program selection struct
     struct Birth dob; // dob struct
     struct app_date app; // save the date applied
@@ -69,9 +77,7 @@ struct Form // application form
 };
 
 // main 
-int main()
-
-{
+int main() {
 
     int choice;
 
@@ -114,12 +120,12 @@ int main()
 
         switch (choice) {
         case 1:
-            system("CLS");
+            
             write_file(file);
             break;
 
         case 2:
-            system("CLS");
+            
             read_file(file);
             break;
 
@@ -150,13 +156,11 @@ void write_file(FILE * file) {
     APP a;
 
     srand(time(NULL));
-    int id = rand() % 999; 
+    int id = rand() % 999;
     // not the greatest way to generate an id 
-    // a proper way would be to save every number generated and compare the news to the old ones 
+    // a proper way would be to save every number generated and compare the new to the old ones 
     // and generate another if it matches
     // to ensure every number is unique
-    
-    
 
     fseek(file, 0, SEEK_END); // goto END of file
 
@@ -172,33 +176,42 @@ void write_file(FILE * file) {
 
     a.id = id;
 
-    printf("\nENTER NAME:");
+    printf("\n+--------------------------------------------------+");
+    printf("\n| FORM                                             |");
+    printf("\n+--------------------------------------------------+");
+
+    printf("\n ENTER NAME : ");
     fgets(a.name, 20, stdin);
     fflush(stdin);
     a.name[strlen(a.name) - 1] = '\0'; // remove new line from buffer
 
-    printf("\nENTER ADDRESS:");
+    printf("\n ENTER ADDRESS : ");
     fgets(a.address, 50, stdin);
     fflush(stdin);
     a.address[strlen(a.address) - 1] = '\0'; // remove new line from buffer
 
-    printf("\nENTER GENDER:");
+    printf("\n ENTER GENDER : ");
     scanf("%c", & a.gender);
     fflush(stdin);
 
-    printf("\nENTER BIRTH YEAR:");
-    scanf("%d", & a.dob.year);
+    // loop while user enters wrong or dates that are out of range
+    do {
+        printf("\n ENTER BIRTH YEAR : ");
+
+    } while (scanf("%d", & a.dob.year) != 1 || a.dob.year < 1000 || a.dob.year > 3000);
     fflush(stdin);
 
-    printf("\nENTER BIRTH MONTH:");
-    scanf("%d", & a.dob.month);
+    do {
+        printf("\n ENTER BIRTH MONTH : ");
+    } while (scanf("%d", & a.dob.month) != 1 || a.dob.month < 0 || a.dob.month > 12);
     fflush(stdin);
 
-    printf("\nENTER BIRTH DAY:");
-    scanf("%d", & a.dob.day);
+    do {
+        printf("\n ENTER BIRTH DAY : ");
+    } while (scanf("%d", & a.dob.day) != 1 || a.dob.day < 0 || a.dob.day > 31);
     fflush(stdin);
 
-    printf("\nENTER SUBJECT COUNT:");
+    printf("\n ENTER SUBJECT COUNT : ");
     scanf("%d", & a.sub_count);
     fflush(stdin);
 
@@ -212,54 +225,86 @@ void write_file(FILE * file) {
 
     for (i = 0; i < a.sub_count; i++) {
 
-        printf("\n%d.SUBJECT NAME:", i + 1);
+        printf("\n %d.SUBJECT NAME : ", i + 1);
         scanf("%[^\n]s", & a.subs[i].sname); // tmp// need to use somthing else instead of scanf        
         fflush(stdin);
 
-        printf("\n%d.ENTER GRADE:", i + 1);
+        printf("\n %d.ENTER GRADE : ", i + 1);
         scanf("%d", & a.subs[i].grade);
         fflush(stdin);
 
     }
 
     printf("\n");
-    printf("SELECT PROGRAMS TO APPLY FOR\n");
-    printf("ENTER 1 FOR YES AND 0 FOR NO\n");
+    printf(" SELECT PROGRAMS TO APPLY FOR\n");
+    printf(" ENTER 1 FOR YES AND 0 FOR NO\n");
 
-    printf("\nAPPLY FOR CS :");
+    printf("\n APPLY FOR CS :");
     scanf("%d", & a.pgm.cs);
     fflush(stdin);
 
-    printf("\nAPPLY FOR IT :");
+    printf("\n APPLY FOR IT :");
     scanf("%d", & a.pgm.it);
     fflush(stdin);
 
-    printf("\nAPPLY FOR IS :");
+    printf("\n APPLY FOR IS :");
     scanf("%d", & a.pgm.is);
     fflush(stdin);
+
+    if (a.pgm.cs == 1)
+
+    {
+        strcpy(a.app_stat.cs, "PENDING APPROVAL");
+
+    } else {
+        strcpy(a.app_stat.cs, "NOT APPLIED");
+
+    }
+
+    if (a.pgm.it == 1)
+
+    {
+        strcpy(a.app_stat.it, "PENDING APPROVAL");
+
+    } else {
+        strcpy(a.app_stat.it, "NOT APPLIED");
+
+    }
+
+    if (a.pgm.is == 1)
+
+    {
+        strcpy(a.app_stat.is, "PENDING APPROVAL");
+
+    } else {
+        strcpy(a.app_stat.is, "NOT APPLIED");
+
+    }
 
     fwrite( & a, sizeof(a), 1, file); //write info to file
 
     if (fwrite != 0) { //print message if file written or not
 
-        printf("\n+------------------------------------------------+");
-        printf("\n| DONE                                           |");
-        printf("\n+------------------------------------------------+");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| DONE                                             |");
+        printf("\n+--------------------------------------------------+");
 
     } else {
-        printf("\n+------------------------------------------------+");
-        printf("\n| ERROR                                          |");
-        printf("\n+------------------------------------------------+");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| ERROR                                            |");
+        printf("\n+--------------------------------------------------+");
     }
 }
 
 // read data from file
 void read_file(FILE * file) {
 
-    // system("CLS");
+    
     APP a;
 
     fseek(file, 0, SEEK_SET);
+    system("CLS");
+
 
     printf("\n");
     printf("+------------------------------------------------------------------------------------------------------------------------------------------------+\n");
@@ -282,7 +327,7 @@ void read_file(FILE * file) {
 
     }
 
-    printf("\n");
+    printf("\n\n");
     system("pause");
 
 }
@@ -295,7 +340,7 @@ void detailed_view(FILE * file) {
     APP a;
 
     while (1) {
-
+        
         printf("\n+--------------------------------------------------+");
         printf("\n| SEARCH                                           |");
         printf("\n+--------------------------------------------------+");
@@ -318,8 +363,8 @@ void detailed_view(FILE * file) {
 
         if (found == 1) {
 
-            system("CLS");
-
+            
+            
             char b_date[20];
             sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
 
@@ -348,11 +393,11 @@ void detailed_view(FILE * file) {
             printf("\n+--------------------------------------------------+");
             printf("\n| PROGRAM                 APPLICATION STATUS       |");
             printf("\n+--------------------------------------------------+");
-            printf("\n| CS                                               |");
+            printf("\n| CS                      %-20s     |", a.app_stat.cs);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IT                                               |");
+            printf("\n| IT                      %-20s     |", a.app_stat.it);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IS                                               |");
+            printf("\n| IS                      %-20s     |", a.app_stat.is);
             printf("\n+--------------------------------------------------+");
 
         } else {
@@ -363,11 +408,18 @@ void detailed_view(FILE * file) {
 
         printf("\n\n\n");
         system("pause");
+        
         break;
     }
 }
 
-void auto_accept(FILE * file) {
+void auto_accept(FILE * file,FILE * file_count;) {
+
+
+
+
+
+    
     printf("WORKING"); // need to think about this later
 }
 
