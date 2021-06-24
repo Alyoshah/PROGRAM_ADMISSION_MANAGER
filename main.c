@@ -18,7 +18,7 @@ FILE * file_count;
 void read_file(FILE * file);
 void write_file(FILE * file);
 void detailed_view(FILE * file);
-void auto_accept(FILE * file,FILE * file_count;);
+void auto_accept(FILE * file,FILE * file_count);
 
 #define APP struct Form
 
