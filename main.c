@@ -1,11 +1,7 @@
 #include <stdio.h>
-
 #include <string.h>
-
 #include <time.h>
-
 #include <stdlib.h>
-
 #include <ctype.h>
 
 // TODO:AUTO ACCEPT APPLICATIONS kinda works
