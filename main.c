@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-// TODO:-[]AUTO ACCEPT APPLICATIONS
+// TODO:AUTO ACCEPT APPLICATIONS
 // - [x] write to file
 // - [x] read from file
 // - [x] read individual file info
@@ -14,15 +14,14 @@ FILE *file;
 FILE *file_count;
 
 void read_file(FILE *file);
-
 void write_file(FILE *file);
-
-void detailed_view(FILE *file);
-
+void detailed_view(FILE *file, FILE *file_count);
 void create_limits(FILE *file_count);
+void accept(FILE *file, FILE *file_count, int app_id);
 
 #define APP struct Form
 
+// structs
 struct Birth // birth info
 {
     int year;
@@ -44,19 +43,11 @@ struct Subjects // subject info
     char sname[50];
 };
 
-struct Program // programs available
+struct Program_application_status // programs available
 {
     int cs;
     int it;
     int is;
-};
-
-struct application_status
-{
-
-    char cs[20];
-    char it[20];
-    char is[20];
 };
 
 struct Form // application form
@@ -66,26 +57,24 @@ struct Form // application form
     char address[30];
     int sub_count;
     int age;
-    char status[10];
+    int status;
     char gender[20];
 
-    struct application_status app_stat;
-    struct Program pgm;       // program selection struct
-    struct Birth dob;         // dob struct
-    struct app_date app;      // save the date applied
-    struct Subjects subs[50]; // sub struct array to store subjects and grade
+    struct Program_application_status pstat; // program selection struct
+    struct Birth dob;                        // dob struct
+    struct app_date app;                     // save the date applied
+    struct Subjects subs[50];                // sub struct array to store subjects and grade
 };
-
+// acceptance limit
 #define p_lim struct program_limits
-
 struct program_limits
 {
-    int cs_limit;
-    int it_limit;
-    int is_limit;
+    int cs_lim;
+    int it_lim;
+    int is_lim;
 };
 
-// main'
+// main
 int main()
 {
 
@@ -94,19 +83,20 @@ int main()
     FILE *file;
     FILE *file_count;
 
-    if ((file = fopen("DB.bin", "rb+")) == NULL) //create file if it doesn't exists or throw an error if it can't be created
+    if ((file = fopen("DB.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
     {
         if ((file = fopen("DB.bin", "wb+")) == NULL)
         {
-            printf("\n\t\tERROR CREATING FILE!!");
+            printf("\nFILE ERROR");
             return 0;
         }
     }
-    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) //create file if it doesn't exists or throw an error if it can't be created
+
+    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
     {
         if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
         {
-            printf("\n\t\tERROR CREATING FILE!!");
+            printf("\nFILE ERROR");
         }
     }
 
@@ -114,9 +104,9 @@ int main()
     {
 
         // main menu loop
-        printf("\n+--------------------------------------------------+");
+        printf("\n+==================================================+");
         printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
-        printf("\n+--------------------------------------------------+");
+        printf("\n+==================================================+");
         printf("\n| ADMISSIONS MANAGER                               |");
         printf("\n+--------------------------------------------------+");
         printf("\n\n");
@@ -131,6 +121,10 @@ int main()
         printf("\n+--------------------------------------------------+");
         printf("\n| 4.EXIT                                           |");
         printf("\n+--------------------------------------------------+");
+        printf("\n| 5.SET APPLICATION LIMITS                         |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 6.AUTO ACCEPT                                    |");
+        printf("\n+==================================================+");
         printf("\n\nChoice : ");
 
         scanf("%d", &choice);
@@ -150,7 +144,7 @@ int main()
 
         case 3:
 
-            detailed_view(file);
+            detailed_view(file, file_count);
             break;
 
         case 4:
@@ -170,7 +164,7 @@ int main()
     return 0;
 }
 
-//write data to file
+// write data to file
 
 void write_file(FILE *file)
 {
@@ -209,9 +203,9 @@ void write_file(FILE *file)
 
     a.id = id;
 
-    printf("\n+--------------------------------------------------+");
+    printf("\n+==================================================+");
     printf("\n| FORM                                             |");
-    printf("\n+--------------------------------------------------+");
+    printf("\n+==================================================+");
 
     printf("\n ENTER NAME : ");
     fgets(a.name, 20, stdin);
@@ -251,19 +245,16 @@ void write_file(FILE *file)
     scanf("%d", &a.sub_count);
     fflush(stdin);
 
-    //set date in form
+    // set date in form
     a.app.year = y, a.app.month = m, a.app.day = d;
     //set age
     a.age = (int)a.app.year - a.dob.year;
-
-    //SET STATUS
-    strcpy(a.status, "PENDING");
 
     for (i = 0; i < a.sub_count; i++)
     {
 
         printf("\n %d.SUBJECT NAME : ", i + 1);
-        scanf("%[^\n]s", &a.subs[i].sname); // tmp// need to use somthing else instead of scanf
+        scanf("%[^\n]s", &a.subs[i].sname); // tmp // need to use somthing else instead of scanf
         fflush(stdin);
 
         do
@@ -278,51 +269,31 @@ void write_file(FILE *file)
     printf(" ENTER 1 FOR YES AND 0 FOR NO\n");
 
     printf("\n APPLY FOR CS :");
-    scanf("%d", &a.pgm.cs);
+    scanf("%d", &a.pstat.cs);
     fflush(stdin);
 
     printf("\n APPLY FOR IT :");
-    scanf("%d", &a.pgm.it);
+    scanf("%d", &a.pstat.it);
     fflush(stdin);
 
     printf("\n APPLY FOR IS :");
-    scanf("%d", &a.pgm.is);
+    scanf("%d", &a.pstat.is);
     fflush(stdin);
 
-    if (a.pgm.cs == 1)
-
+    // set status on application
+    if (a.pstat.cs == 1 || a.pstat.it == 1 || a.pstat.is == 1)
     {
-        strcpy(a.app_stat.cs, "PENDING APPROVAL");
+        a.status = 1;
     }
-    else
+    else if (a.pstat.cs == 0 && a.pstat.it == 0 && a.pstat.is == 0)
     {
-        strcpy(a.app_stat.cs, "NOT APPLIED");
-    }
-
-    if (a.pgm.it == 1)
-
-    {
-        strcpy(a.app_stat.it, "PENDING APPROVAL");
-    }
-    else
-    {
-        strcpy(a.app_stat.it, "NOT APPLIED");
+        a.status = 0;
     }
 
-    if (a.pgm.is == 1)
-
-    {
-        strcpy(a.app_stat.is, "PENDING APPROVAL");
-    }
-    else
-    {
-        strcpy(a.app_stat.is, "NOT APPLIED");
-    }
-
-    fwrite(&a, sizeof(a), 1, file); //write info to file
+    fwrite(&a, sizeof(a), 1, file); // write info to file
 
     if (fwrite != 0)
-    { //print message if file written or not
+    { // print message if file written or not
 
         printf("\n+--------------------------------------------------+");
         printf("\n| DONE                                             |");
@@ -342,27 +313,49 @@ void read_file(FILE *file)
 
     APP a;
 
+    char a_status[20];
     system("CLS");
     fseek(file, 0, SEEK_SET);
 
-    printf("+------------------------------------------------------------------------------------------------------------------------------------------------+\n");
+    printf("+================================================================================================================================================+\n");
     printf("|ID   NAME               DATE OF BIRTH       AGE                 GENDER              NO.SUBJECTS         STATUS              DATE APPLIED        |\n");
-    printf("+------------------------------------------------------------------------------------------------------------------------------------------------+");
+    printf("+================================================================================================================================================+");
 
-    //printf("\n");
+    // printf("\n");
 
     while (fread(&a, sizeof(a), 1, file) == 1)
 
-    {
+    { //insert logic to set status
+        printf("\nSTATUS:%d", a.status);
 
-        //convert date to strings
+        switch (a.status)
+        {
+        case 0:
+            strcpy(a_status, "ERROR");
+            break;
+        case 1:
+            strcpy(a_status, "PENDING");
+            break;
+
+        case 2:
+            strcpy(a_status, "ACCEPTED");
+            break;
+        case 3:
+            strcpy(a_status, "DENIED");
+            break;
+
+        default:
+            break;
+        }
+
+        // convert date to strings
         char a_date[20];
         char b_date[20];
 
         sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
         sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
 
-        printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a.status, a_date);
+        printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
         printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
     }
 
@@ -370,20 +363,21 @@ void read_file(FILE *file)
     system("pause");
 }
 
-//view detailed info on one person
-void detailed_view(FILE *file)
+// view detailed info on one person
+void detailed_view(FILE *file, FILE *file_count)
 {
-
+    char status[3][20];
     int found, i;
     int srch_id;
+    int appid;
     APP a;
 
     while (1)
     {
 
-        printf("\n+--------------------------------------------------+");
+        printf("\n+==================================================+");
         printf("\n| SEARCH                                           |");
-        printf("\n+--------------------------------------------------+");
+        printf("\n+==================================================+");
         printf("\n\nEnter ID : ");
         scanf("%d", &srch_id);
         fflush(stdin);
@@ -409,9 +403,9 @@ void detailed_view(FILE *file)
             char b_date[20];
             sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
 
-            printf("\n+--------------------------------------------------+");
+            printf("\n+==================================================+");
             printf("\n| INFORMATION                                      |");
-            printf("\n+--------------------------------------------------+");
+            printf("\n+==================================================+");
             printf("\n| NAME : %-20s                      |", a.name);
             printf("\n+--------------------------------------------------+");
             printf("\n| ADDRESS : %-30s         |", a.address);
@@ -431,17 +425,25 @@ void detailed_view(FILE *file)
                 printf("\n| %-20s    %1d                        |", a.subs[i].sname, a.subs[i].grade);
                 printf("\n+--------------------------------------------------+");
             }
+            //checking the approval status of each program
 
             printf("\n");
-            printf("\n+--------------------------------------------------+");
+            printf("\n+==================================================+");
             printf("\n| PROGRAM                 APPLICATION STATUS       |");
+            printf("\n+==================================================+");
+            printf("\n| CS                      %-20d     |", a.pstat.cs);
             printf("\n+--------------------------------------------------+");
-            printf("\n| CS                      %-20s     |", a.app_stat.cs);
+            printf("\n| IT                      %-20d     |", a.pstat.it);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IT                      %-20s     |", a.app_stat.it);
+            printf("\n| IS                      %-20d     |", a.pstat.is);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IS                      %-20s     |", a.app_stat.is);
             printf("\n+--------------------------------------------------+");
+            printf("\n| PROCESS APPLICATION                              |");
+            printf("\n+--------------------------------------------------+");
+            printf("\nEnter 1 to process:");
+            scanf("%s", appid);
+
+            accept(file, file_count, appid);
         }
         else
         {
@@ -450,44 +452,6 @@ void detailed_view(FILE *file)
             printf("\n+--------------------------------------------------+");
         }
 
-        int ach;
-
-        // while (1) // testing
-
-        // {
-        //     printf("\n");
-        //     printf("\n");
-        //     printf("\n+--------------------------------------------------+");
-        //     printf("\n| APPLICATION PROCESSING MENU                      |");
-        //     printf("\n+--------------------------------------------------+");
-        //     printf("\n| 1:AUTOMATICALLY ACCEPT INTO APPROPRIATE PROGRAM  |");
-        //     printf("\n+--------------------------------------------------+");
-        //     printf("\n| 2.EXIT                                           |");
-        //     printf("\n+--------------------------------------------------+");
-
-        //     do
-        //     {
-        //         printf("\nCHOICE : ");
-
-        //     } while (scanf("%d", &ach) != 1 || ach < 0 || ach > 2);
-        //     fflush(stdin);
-
-        //     switch (ach)
-        //     {
-        //     case 1:
-        //         printf("\naccepted\n");
-        //         break;
-
-        //     case 2:
-        //         break;
-
-        //     default:
-        //         break;
-        //     }
-        //     //system("pause");
-        //     break;
-        // }
-
         printf("\n\n\n");
         system("pause");
 
@@ -495,24 +459,90 @@ void detailed_view(FILE *file)
     }
 }
 
+void accept(FILE *file, FILE *file_count, int app_id)
+{
+
+    p_lim pl;
+    APP a;
+    int start_processing;
+    int id;
+    int cs;
+    int it;
+    int is;
+
+    //file_count = fopen("LIMITS.bin", "rb+");
+    rewind(file_count);
+    rewind(file);
+    printf("AID=%d", id);
+    while (fread(&pl, sizeof(pl), 1, file_count) == 1)
+    {
+        cs = pl.cs_lim;
+        it = pl.it_lim;
+        is = pl.is_lim;
+    }
+
+    // printf("\n%d %d %d", cs, it, is);
+
+    while (fread(&a, sizeof(a), 1, file) == 1)
+    {
+
+        if (a.id == id)
+        {
+            start_processing = 1;
+
+            break;
+        }
+    }
+
+    if (start_processing == 1) //testing
+    {
+        fseek(file, -sizeof(a), SEEK_CUR);
+
+        printf("\nSubcount:%d", a.sub_count);
+
+        if (a.sub_count > 1)
+        {
+            a.status = 3;
+        }
+
+        fwrite(&a, sizeof(a), 1, file); // write info to file
+
+        if (fwrite != 0)
+        { // print message if file written or not
+
+            printf("\n+--------------------------------------------------+");
+            printf("\n| DONE                                             |");
+            printf("\n+--------------------------------------------------+");
+        }
+        else
+        {
+            printf("\n+--------------------------------------------------+");
+            printf("\n| ERROR                                            |");
+            printf("\n+--------------------------------------------------+");
+        }
+    }
+}
 void create_limits(FILE *file_count)
 
 {
 
     p_lim pl;
 
-    rewind(file_count);
-    printf("\n ENTER APPLICAION LIMIT FOR CS : ");
-    scanf("%d", &pl.cs_limit);
-    fflush(stdin);
+    //file_count = fopen("LIMITS.bin", "rb+");
 
-    printf("\n ENTER APPLICAION LIMIT FOR IT : ");
-    scanf("%d", &pl.it_limit);
-    fflush(stdin);
+    // while (fread(&pl, sizeof(struct program_limits), 1, file_count) == 1)
+    // {
+    //     printf("\n%d", pl.cs_lim);
+    // }
 
-    printf("\n ENTER APPLICAION LIMIT FOR IS : ");
-    scanf("%d", &pl.is_limit);
-    fflush(stdin);
+    printf("ENTER ACCEPTANCE LIMIT FOR CS:");
+    scanf("%d", &pl.cs_lim);
+
+    printf("ENTER ACCEPTANCE LIMIT FOR IT:");
+    scanf("%d", &pl.it_lim);
+
+    printf("ENTER ACCEPTANCE LIMIT FOR IS:");
+    scanf("%d", &pl.is_lim);
 
     fwrite(&pl, sizeof(pl), 1, file_count);
 
@@ -522,3 +552,4 @@ void create_limits(FILE *file_count)
 // https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
 // https://www.tutorialspoint.com/c_standard_library/c_function_fwrite.htm
 // https://www.eecis.udel.edu/~sprenkle/cisc105/making_columns.html
+// https://fresh2refresh.com/c-programming/c-file-handling/fseek-seek_set-seek_cur-seek_end-functions-c/
