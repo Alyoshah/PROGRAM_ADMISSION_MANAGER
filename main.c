@@ -123,8 +123,7 @@ int main()
         printf("\n+--------------------------------------------------+");
         printf("\n| 5.SET APPLICATION LIMITS                         |");
         printf("\n+--------------------------------------------------+");
-        printf("\n| 6.AUTO ACCEPT                                    |");
-        printf("\n+==================================================+");
+
         printf("\n\nChoice : ");
 
         scanf("%d", &choice);
@@ -326,7 +325,7 @@ void read_file(FILE *file)
     while (fread(&a, sizeof(a), 1, file) == 1)
 
     { //insert logic to set status
-        printf("\nSTATUS:%d", a.status);
+        // printf("\nSTATUS:%d", a.status);
 
         switch (a.status)
         {
@@ -440,7 +439,7 @@ void detailed_view(FILE *file, FILE *file_count)
             printf("\n+--------------------------------------------------+");
             printf("\n| PROCESS APPLICATION                              |");
             printf("\n+--------------------------------------------------+");
-            printf("\nEnter 1 to process:");
+            printf("\n\n");
             system("pause");
 
             accept(file, file_count, a.id);
@@ -461,20 +460,18 @@ void detailed_view(FILE *file, FILE *file_count)
 
 void accept(FILE *file, FILE *file_count, int app_id)
 {
-    printf("AID=%d", app_id);
+    //printf("AID=%d", app_id);
     p_lim pl;
     APP a;
     int start_processing;
-    int id;
-    int cs;
-    int it;
-    int is;
+    int cs, it, is;
+    int s = sizeof(a); //size of struct
 
     //file_count = fopen("LIMITS.bin", "rb+");
     rewind(file_count);
     rewind(file);
 
-    while (fread(&pl, sizeof(pl), 1, file_count) == 1)
+    while (fread(&pl, sizeof(pl), 1, file_count) == 1) //get current limit values from file
     {
         cs = pl.cs_lim;
         it = pl.it_lim;
@@ -486,7 +483,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
     while (fread(&a, sizeof(a), 1, file) == 1)
     {
 
-        if (a.id == appid)
+        if (a.id == app_id)
         {
             start_processing = 1;
 
@@ -496,14 +493,22 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
     if (start_processing == 1) //testing
     {
-        fseek(file, -sizeof(a), SEEK_CUR);
+        fseek(file, -s, SEEK_CUR);
 
-        printf("\nSubcount:%d", a.sub_count);
+        //printf("\nSubcount:%d", a.sub_count);
 
-        if (a.sub_count > 1)
+        /// INSERT acceptance logic criteria here
+        //Acceptance into all three programs are based on the criteria:
+        //▪ 5 subjects at CSEC including Mathematics and English
+        //▪ 16 years old or over
+
+        if (a.sub_count < 5)
         {
             a.status = 3;
         }
+
+        // IF SUB COUNT >5 AND FOR GRADES ARE >=1 AND <=3 WE ACCEPT
+        //
 
         fwrite(&a, sizeof(a), 1, file); // write info to file
 
