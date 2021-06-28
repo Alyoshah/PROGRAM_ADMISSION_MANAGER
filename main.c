@@ -125,7 +125,7 @@ int main()
         printf("\n+--------------------------------------------------+");
         printf("\n| 2.READ ALL ENTRIES                               |");
         printf("\n+--------------------------------------------------+");
-        printf("\n| 3.VIEW DETAILED INFO ON A SINGLE ENTRY           |");
+        printf("\n| 3.VIEW AND PROCESS APPLICATION BY ID             |");
         printf("\n+--------------------------------------------------+");
         printf("\n| 4.EXIT                                           |");
         printf("\n+--------------------------------------------------+");
@@ -297,7 +297,7 @@ void write_file(FILE *file)
     {
         a.status = 0;
     }
-
+    a.pstat.cs_approval = 0, a.pstat.it_approval = 0, a.pstat.is_approval = 0;
     fwrite(&a, sizeof(a), 1, file); // write info to file
 
     if (fwrite != 0)
@@ -437,6 +437,7 @@ void detailed_view(FILE *file, FILE *file_count)
             }
             //checking the approval status of each program
             char status_check[3][20];
+            char approval_status[3][20];
             // switch to set string
             switch (a.pstat.cs)
             {
@@ -476,15 +477,48 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
+
+            switch (a.pstat.cs_approval)
+            {
+            case 1:
+                strcpy(approval_status[0], "ACCEPTED");
+                break;
+            case 0:
+                strcpy(approval_status[0], "DENIED");
+                break;
+
+            default:
+                break;
+            }
+
+            // if (a.pstat.it_approval == 1)
+            // {
+
+            //     strcpy(approval_status[1], "APPROVED");
+            // }
+            // else
+            // {
+            //     strcpy(approval_status[1], "");
+            // }
+            // if (a.pstat.is_approval == 1)
+            // {
+
+            //     strcpy(approval_status[2], "APPROVED");
+            // }
+            // else
+            // {
+            //     strcpy(approval_status[2], "");
+            // }
+
             printf("\n");
             printf("\n+==================================================+");
             printf("\n| PROGRAM                 PROGRAM STATUS           |");
             printf("\n+==================================================+");
-            printf("\n| CS                      %-20s     |", status_check[0]);
+            printf("\n| CS                      %-20s %10s |", status_check[0], approval_status[0]);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IT                      %-20s     |", status_check[1]);
+            printf("\n| IT                      %-20s      %-10d |", status_check[1], a.pstat.it_approval);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IS                      %-20s     |", status_check[2]);
+            printf("\n| IS                      %-20s      %-10d |", status_check[2], a.pstat.is_approval);
             printf("\n+--------------------------------------------------+");
             printf("\n\n");
             printf("\n+--------------------------------------------------+");
@@ -540,7 +574,6 @@ void accept(FILE *file, FILE *file_count, int app_id)
     int s = sizeof(a); //size of struct
     int p = sizeof(pl);
 
-    //
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
     rewind(file);
     rewind(file_count);
@@ -616,6 +649,23 @@ void accept(FILE *file, FILE *file_count, int app_id)
         //// ACCEPTANCE LOGIC
         ///////////////////////////////////////////////////////////////////////////////////////////////
         // NO PROGRAM CAN ACCEPT MORE THAN 20
+        if (a.sub_count < 5)
+        {
+            a.status = 3;
+
+            if (a.pstat.cs == 1)
+            {
+                a.pstat.cs_approval = 0;
+            }
+            if (a.pstat.it = 1)
+            {
+                a.pstat.it_approval = 0;
+            }
+            if (a.pstat.is = 1)
+            {
+                a.pstat.is_approval = 0;
+            }
+        }
 
         if (a.pstat.cs == 1 && a.pstat.it == 1 && a.pstat.is == 1)
         // set if the applicant applied to all
