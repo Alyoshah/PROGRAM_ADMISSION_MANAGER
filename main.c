@@ -19,46 +19,46 @@ void detailed_view(FILE *file, FILE *file_count);
 void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
 
-#define APP struct Form
+#define APP struct Form // alias form as app
 
 // structs
 struct Birth // birth info
 {
-    int year;
-    int month;
-    int day;
+    int year;  // birth year
+    int month; // birth month
+    int day;   // birth day
 };
 
 struct app_date // save application date
 {
-    int year;
-    int month;
-    int day;
+    int year;  // application year
+    int month; // application month
+    int day;   // application day
 };
 
 struct Subjects // subject info
 {
 
-    int grade;
-    char sname[50];
+    int grade;      // subject grade
+    char sname[50]; // subject name
 };
 
 struct Program_application_status // programs available
 {
-    int cs;
-    int it;
-    int is;
+    int cs; // computer science
+    int it; // information technology
+    int is; // information systems
 };
 
 struct Form // application form
 {
-    int id;
-    char name[20];
-    char address[30];
-    int sub_count;
-    int age;
-    int status;
-    char gender[20];
+    int id;           // application id
+    char name[20];    // applicant name
+    char address[30]; // applicant address
+    int sub_count;    // subject count
+    int age;          // applicant age
+    int status;       // applicant application status
+    char gender[20];  // applicant gender M F
 
     struct Program_application_status pstat; // program selection struct
     struct Birth dob;                        // dob struct
@@ -77,7 +77,7 @@ struct program_limits
 // main
 int main()
 {
-
+    system("COLOR 1");
     int choice;
 
     FILE *file;
@@ -167,7 +167,8 @@ int main()
 
 void write_file(FILE *file)
 {
-
+    system("cls");
+    system("COLOR 2");
     int m, d, y;
     int i;
 
@@ -309,7 +310,7 @@ void write_file(FILE *file)
 // read data from file
 void read_file(FILE *file)
 {
-
+    system("cls");
     APP a;
 
     char a_status[20];
@@ -365,6 +366,7 @@ void read_file(FILE *file)
 // view detailed info on one person
 void detailed_view(FILE *file, FILE *file_count)
 {
+    system("cls");
     char status[3][20];
     int found, i;
     int srch_id;
