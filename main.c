@@ -2,8 +2,9 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-// TODO:AUTO ACCEPT APPLICATIONS
+// TODO:AUTO ACCEPT APPLICATIONS kinda works
 // - [x] write to file
 // - [x] read from file
 // - [x] read individual file info
@@ -20,7 +21,7 @@ void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
 
 #define APP struct Form // alias form as app
-
+#define p_lim struct program_limits
 // structs
 struct Birth // birth info
 {
@@ -66,20 +67,20 @@ struct Form // application form
     struct Subjects subs[50];                // sub struct array to store subjects and grade
 };
 // acceptance limit
-#define p_lim struct program_limits
+
 struct program_limits
 {
-    int cs_lim;
-    int it_lim;
-    int is_lim;
+    int cs_lim; // CS MAX APPLICATIONS
+    int it_lim; // IT MAX APPLICATIONS
+    int is_lim; // IS MAX APPLICATIONS
 };
 
 // main
 int main()
 {
     system("COLOR 1");
-    int choice;
 
+    int choice;
     FILE *file;
     FILE *file_count;
 
@@ -129,7 +130,7 @@ int main()
         scanf("%d", &choice);
         fflush(stdin);
 
-        switch (choice)
+        switch (choice) // SWITCH CHOICE
         {
         case 1:
 
@@ -172,7 +173,7 @@ void write_file(FILE *file)
     int m, d, y;
     int i;
 
-    APP a;
+    APP a; // FORM -> APP -> A
 
     rewind(file);
 
@@ -187,7 +188,7 @@ void write_file(FILE *file)
         }
     }
 
-    int id = tmpid + 1;
+    int id = tmpid + 1; // increment id
 
     fseek(file, 0, SEEK_END); // goto END of file
 
@@ -195,13 +196,13 @@ void write_file(FILE *file)
     time_t currentTime;
     time(&currentTime);
 
-    struct tm *myTime = localtime(&currentTime);
+    struct tm *myTime = localtime(&currentTime); // time struct
 
     m = myTime->tm_mon + 1; // months count from 0,so we add 1
     d = myTime->tm_mday;
     y = myTime->tm_year + 1900; // time starts from 1900
 
-    a.id = id;
+    a.id = id; // APPLICANT ID = ID
 
     printf("\n+==================================================+");
     printf("\n| FORM                                             |");
@@ -315,7 +316,7 @@ void read_file(FILE *file)
 
     char a_status[20];
     system("CLS");
-    fseek(file, 0, SEEK_SET);
+    fseek(file, 0, SEEK_SET); // READ FROM THE TOP OF THE FILE
 
     printf("+================================================================================================================================================+\n");
     printf("|ID   NAME               DATE OF BIRTH       AGE                 GENDER              NO.SUBJECTS         STATUS              DATE APPLIED        |\n");
@@ -390,10 +391,10 @@ void detailed_view(FILE *file, FILE *file_count)
 
             int pid = a.id;
 
-            if (pid == srch_id)
+            if (pid == srch_id) //  CHECK IF SEARCH MATCHES ANY IDS IN THE FILE
             {
 
-                found = 1;
+                found = 1; // BREAK OUT OF SEARCH LOOP IF ID IS FOUND
                 break;
             }
         }
@@ -427,16 +428,55 @@ void detailed_view(FILE *file, FILE *file_count)
                 printf("\n+--------------------------------------------------+");
             }
             //checking the approval status of each program
+            char status_check[3][20];
+            // switch to set string
+            switch (a.pstat.cs)
+            {
+            case 1:
+                strcpy(status_check[0], "APPLIED");
 
+                break;
+            case 0:
+                strcpy(status_check[0], "NOT APPLIED");
+
+            default:
+                break;
+            }
+
+            switch (a.pstat.it)
+            {
+            case 1:
+                strcpy(status_check[1], "APPLIED");
+
+                break;
+            case 0:
+                strcpy(status_check[1], "NOT APPLIED");
+
+            default:
+                break;
+            }
+
+            switch (a.pstat.is)
+            {
+            case 1:
+                strcpy(status_check[2], "APPLIED");
+
+                break;
+            case 0:
+                strcpy(status_check[2], "NOT APPLIED");
+
+            default:
+                break;
+            }
             printf("\n");
             printf("\n+==================================================+");
             printf("\n| PROGRAM                 APPLICATION STATUS       |");
             printf("\n+==================================================+");
-            printf("\n| CS                      %-20d     |", a.pstat.cs);
+            printf("\n| CS                      %-20s     |", status_check[0]);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IT                      %-20d     |", a.pstat.it);
+            printf("\n| IT                      %-20s     |", status_check[1]);
             printf("\n+--------------------------------------------------+");
-            printf("\n| IS                      %-20d     |", a.pstat.is);
+            printf("\n| IS                      %-20s     |", status_check[2]);
             printf("\n+--------------------------------------------------+");
             printf("\n+--------------------------------------------------+");
             printf("\n| PROCESS APPLICATION                              |");
@@ -469,7 +509,6 @@ void accept(FILE *file, FILE *file_count, int app_id)
     int cs, it, is;
     int s = sizeof(a); //size of struct
 
-    //file_count = fopen("LIMITS.bin", "rb+");
     rewind(file_count);
     rewind(file);
 
@@ -487,7 +526,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
         if (a.id == app_id)
         {
-            start_processing = 1;
+            start_processing = 1; // same as when reading the file , if id is found do what has to be done
 
             break;
         }
@@ -496,6 +535,47 @@ void accept(FILE *file, FILE *file_count, int app_id)
     if (start_processing == 1) //testing
     {
         fseek(file, -s, SEEK_CUR);
+
+        char math[20] = "math";
+        char english[20] = "eng";
+        char sub[20];
+        char *check;
+
+        int math_pass = 0;  // changes to 1 if math is found with a passed grade
+        int eng_pass = 0;   // changes to 1 if eng is found with a passed grade
+        int pass_count = 0; // counts how many subjects the application has that are between grades 1-3
+
+        for (int i = 0; i < a.sub_count; i++)
+
+        {
+            strcpy(sub, a.subs[i].sname); // copy applicant sub name to var for comparison
+
+            //printf("\nin file:%s", sub);
+
+            for (int j = 0; sub[j]; j++)
+            {
+                sub[j] = tolower(sub[j]); // make subject name lower case to compare it
+            }
+
+            check = strstr(sub, math);
+            if (check && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF MATHS IS FOUND AND GRADE IS 1-3 and set math_pass to 1
+            {
+                // printf("\nFOUND %s GRADE :%d", math, a.subs[i].grade);
+                math_pass = 1;
+            }
+
+            check = strstr(sub, english); // make subject name lower case to compare it
+
+            if (check && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF ENGLISH IS FOUND AND GRADE IS 1-3 and set eng_pass to 1
+            {
+                // printf("\nFOUND %s GRADE :%d", english, a.subs[i].grade);
+                eng_pass = 1;
+            }
+
+            // printf("\nconverted:%s", sub);
+        }
+        // printf("\nMATH %d", math_pass);
+        // printf("\nENG %d", eng_pass);
 
         //printf("\nSubcount:%d", a.sub_count);
 
