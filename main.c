@@ -1,10 +1,17 @@
 #include <stdio.h>
+
 #include <string.h>
+
 #include <time.h>
+
 #include <stdlib.h>
+
 #include <ctype.h>
 
 // TODO:AUTO ACCEPT APPLICATIONS kinda works
+// TODO:SET FLAG FOR APPLICATION ACCEPTED
+// TODO: COUNT MF ACCEPTED INTO PROGRAMS
+// TODO: SEPERATE MENU FOR APPLYING AND ADMINS
 // - [x] write to file
 // - [x] read from file
 // - [x] read individual file info
@@ -20,8 +27,8 @@ void detailed_view(FILE *file, FILE *file_count);
 void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
 
-#define APP struct Form // alias form as app
-#define p_lim struct program_limits
+#define APP struct Form             // alias form as app
+#define p_lim struct program_limits // alias for program acceptance limits
 // structs
 struct Birth // birth info
 {
@@ -46,9 +53,9 @@ struct Subjects // subject info
 
 struct Program_application_status // programs available
 {
-    int cs; // computer science
-    int it; // information technology
-    int is; // information systems
+    int cs, cs_approval; // computer science
+    int it, it_approval; // information technology
+    int is, is_approval; // information systems
 };
 
 struct Form // application form
@@ -73,12 +80,16 @@ struct program_limits
     int cs_lim; // CS MAX APPLICATIONS
     int it_lim; // IT MAX APPLICATIONS
     int is_lim; // IS MAX APPLICATIONS
+    int cs_accepted, it_accepted, is_accepted;
+    int csgen_f, csgen_m;
+    int itgen_f, itgen_m;
+    int isgen_f, isgen_m;
 };
 
 // main
 int main()
 {
-    system("COLOR 1");
+    system("COLOR 2");
 
     int choice;
     FILE *file;
@@ -169,7 +180,7 @@ int main()
 void write_file(FILE *file)
 {
     system("cls");
-    system("COLOR 2");
+
     int m, d, y;
     int i;
 
@@ -312,9 +323,9 @@ void write_file(FILE *file)
 void read_file(FILE *file)
 {
     system("cls");
+    char a_status[20];
     APP a;
 
-    char a_status[20];
     system("CLS");
     fseek(file, 0, SEEK_SET); // READ FROM THE TOP OF THE FILE
 
@@ -372,6 +383,7 @@ void detailed_view(FILE *file, FILE *file_count)
     int found, i;
     int srch_id;
     int appid;
+    int chce;
     APP a;
 
     while (1)
@@ -470,7 +482,7 @@ void detailed_view(FILE *file, FILE *file_count)
             }
             printf("\n");
             printf("\n+==================================================+");
-            printf("\n| PROGRAM                 APPLICATION STATUS       |");
+            printf("\n| PROGRAM                 PROGRAM STATUS           |");
             printf("\n+==================================================+");
             printf("\n| CS                      %-20s     |", status_check[0]);
             printf("\n+--------------------------------------------------+");
@@ -478,13 +490,28 @@ void detailed_view(FILE *file, FILE *file_count)
             printf("\n+--------------------------------------------------+");
             printf("\n| IS                      %-20s     |", status_check[2]);
             printf("\n+--------------------------------------------------+");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| PROCESS APPLICATION                              |");
-            printf("\n+--------------------------------------------------+");
             printf("\n\n");
-            system("pause");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| OPTIONS                                          |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 1. AUTOMATICALLY PROCESS APPLICATION             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 2. RETURN TO MAIN MENU                           |");
+            printf("\n+--------------------------------------------------+");
 
-            accept(file, file_count, a.id);
+            do
+            {
+                printf("\nCHOICE : ");
+            } while (scanf("%d", &chce) != 1 || chce < 1 || chce > 2);
+
+            if (chce == 1)
+            {
+                accept(file, file_count, a.id);
+            }
+            else
+            {
+                break;
+            }
         }
         else
         {
@@ -502,22 +529,25 @@ void detailed_view(FILE *file, FILE *file_count)
 
 void accept(FILE *file, FILE *file_count, int app_id)
 {
-    //printf("AID=%d", app_id);
+    // printf("AID=%d", app_id);
+    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
+    {
+        if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
+        {
+            printf("\nFILE ERROR");
+        }
+    }
     p_lim pl;
     APP a;
     int start_processing;
     int cs, it, is;
     int s = sizeof(a); //size of struct
+    int p = sizeof(pl);
 
-    rewind(file_count);
+    //
+    fread(&pl, sizeof(pl), 1, file_count); // read limit file
     rewind(file);
-
-    while (fread(&pl, sizeof(pl), 1, file_count) == 1) //get current limit values from file
-    {
-        cs = pl.cs_lim;
-        it = pl.it_lim;
-        is = pl.is_lim;
-    }
+    rewind(file_count);
 
     // printf("\n%d %d %d", cs, it, is);
 
@@ -531,23 +561,27 @@ void accept(FILE *file, FILE *file_count, int app_id)
             break;
         }
     }
+    // APPLICATION ACCEPTANCE
+    if (start_processing == 1) // process data
 
-    if (start_processing == 1) //testing
     {
-        fseek(file, -s, SEEK_CUR);
+        fseek(file, -s, SEEK_CUR); // set file position to the block of data with applicant info
 
-        char math[20] = "math";
-        char english[20] = "eng";
-        char sub[20];
-        char *check;
+        char math[20] = "math";   // string to search for math
+        char english[20] = "eng"; // string to search for english
+        char sub[20];             // copy applicant subject names temp here to check for a match
+        char *check1, *check2;    // pointers for string comparison
 
         int math_pass = 0;  // changes to 1 if math is found with a passed grade
         int eng_pass = 0;   // changes to 1 if eng is found with a passed grade
         int pass_count = 0; // counts how many subjects the application has that are between grades 1-3
+        int req_met;        // requirements met == 1 when subjects >5 pass >5 + eng and math
+        int applied_to_all; // true if applicant applied to all programs
 
         for (int i = 0; i < a.sub_count; i++)
 
         {
+
             strcpy(sub, a.subs[i].sname); // copy applicant sub name to var for comparison
 
             //printf("\nin file:%s", sub);
@@ -555,44 +589,116 @@ void accept(FILE *file, FILE *file_count, int app_id)
             for (int j = 0; sub[j]; j++)
             {
                 sub[j] = tolower(sub[j]); // make subject name lower case to compare it
+                // printf("\nconverted:%s", sub);
             }
 
-            check = strstr(sub, math);
-            if (check && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF MATHS IS FOUND AND GRADE IS 1-3 and set math_pass to 1
+            check1 = strstr(sub, math);
+            if (check1 && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF MATHS IS FOUND AND GRADE IS 1-3 and set math_pass to 1
             {
                 // printf("\nFOUND %s GRADE :%d", math, a.subs[i].grade);
                 math_pass = 1;
             }
 
-            check = strstr(sub, english); // make subject name lower case to compare it
+            check2 = strstr(sub, english); // make subject name lower case to compare it
 
-            if (check && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF ENGLISH IS FOUND AND GRADE IS 1-3 and set eng_pass to 1
+            if (check2 && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF ENGLISH IS FOUND AND GRADE IS 1-3 and set eng_pass to 1
             {
                 // printf("\nFOUND %s GRADE :%d", english, a.subs[i].grade);
                 eng_pass = 1;
             }
 
-            // printf("\nconverted:%s", sub);
+            if (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)
+            {
+                pass_count++;
+            }
         }
         // printf("\nMATH %d", math_pass);
         // printf("\nENG %d", eng_pass);
+        //printf("\nPassCount:%d", pass_count);
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        //// ACCEPTANCE LOGIC
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        // NO PROGRAM CAN ACCEPT MORE THAN 20
+
+        if (a.pstat.cs == 1 && a.pstat.it == 1 && a.pstat.is == 1)
+        // set if the applicant applied to all
+        {
+            applied_to_all = 1;
+        }
+
+        else if (a.pstat.cs == 0 && a.pstat.it == 0 && a.pstat.is == 0) // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
+        {
+            a.status = 0;
+        }
+
+        //check if all basic requirements are met to get accepted into all programs
+        if (pass_count >= 5 && math_pass == 1 && eng_pass == 1 && a.age >= 16) // requirements for all three programs
+        {
+            req_met = 1;
+        }
+        // set status here if requiremenets are met
+        if (req_met == 1 && pl.cs_accepted < pl.cs_lim && a.pstat.cs == 1)
+        {
+            a.status = 2;
+            pl.cs_accepted++;
+            a.pstat.cs_approval = 1;
+
+            if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0)
+            {
+                pl.csgen_m++;
+            }
+            if (strcmp(a.gender, "f") == 0 || strcmp(a.gender, "F") == 0)
+            {
+                pl.csgen_f++;
+            }
+        }
+        if (req_met == 1 && pl.it_accepted < pl.it_lim && a.pstat.it == 1)
+        {
+            a.status = 2;
+            pl.it_accepted++;
+            a.pstat.it_approval = 1;
+
+            if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0)
+            {
+                pl.itgen_m++;
+            }
+            if (strcmp(a.gender, "f") == 0 || strcmp(a.gender, "F") == 0)
+            {
+                pl.itgen_f++;
+            }
+        }
+        if (req_met == 1 && pl.is_accepted < pl.is_lim && a.pstat.is == 1)
+        {
+            a.status = 2;
+            pl.is_accepted++;
+            a.pstat.is_approval = 1;
+
+            if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0)
+            {
+                pl.isgen_m++;
+            }
+            if (strcmp(a.gender, "f") == 0 || strcmp(a.gender, "F") == 0)
+            {
+                pl.isgen_f++;
+            }
+        }
+        //printf("\nCS - %d\nIT - %d\nIS - %d", cs_can_accept, it_can_accept, is_can_accept);
+
+        //////////////////////////////////////////////////////////////////////
+
+        fseek(file_count, -p, SEEK_CUR);
+
+        //////////////////////////////////////////////////////////////////////
 
         //printf("\nSubcount:%d", a.sub_count);
 
-        /// INSERT acceptance logic criteria here
-        //Acceptance into all three programs are based on the criteria:
-        //▪ 5 subjects at CSEC including Mathematics and English
-        //▪ 16 years old or over
-
-        if (a.sub_count < 5)
-        {
-            a.status = 3;
-        }
-
-        // IF SUB COUNT >5 AND FOR GRADES ARE >=1 AND <=3 WE ACCEPT
-        //
+        ////////////////////////////////////////////////////////////////
 
         fwrite(&a, sizeof(a), 1, file); // write info to file
+
+        fwrite(&pl, sizeof(pl), 1, file_count);
+        fclose(file_count);
 
         if (fwrite != 0)
         { // print message if file written or not
@@ -609,30 +715,57 @@ void accept(FILE *file, FILE *file_count, int app_id)
         }
     }
 }
+
+//func to set program limits
 void create_limits(FILE *file_count)
 
 {
-
+    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
+    {
+        if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
+        {
+            printf("\nFILE ERROR");
+        }
+    }
     p_lim pl;
+    int plsiz = sizeof(pl);
+    fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
-    //file_count = fopen("LIMITS.bin", "rb+");
+    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);
+    printf("\nCS ACCPTED %d \nIT ACCEPTED %d\nIS ACCEPTED %d", pl.cs_accepted, pl.it_accepted, pl.it_accepted);
+    printf("\ncsm:%d\ncsf:%d\nitm:%d\nitf%d\nism:%d\nisf:%d", pl.csgen_m, pl.csgen_f, pl.itgen_m, pl.itgen_f, pl.isgen_m, pl.isgen_f);
 
-    // while (fread(&pl, sizeof(struct program_limits), 1, file_count) == 1)
-    // {
-    //     printf("\n%d", pl.cs_lim);
-    // }
+    fseek(file_count, -plsiz, SEEK_CUR);
 
-    printf("ENTER ACCEPTANCE LIMIT FOR CS:");
+    printf("\nENTER ACCEPTANCE LIMIT FOR CS:");
     scanf("%d", &pl.cs_lim);
 
-    printf("ENTER ACCEPTANCE LIMIT FOR IT:");
+    printf("\nENTER ACCEPTANCE LIMIT FOR IT:");
     scanf("%d", &pl.it_lim);
 
-    printf("ENTER ACCEPTANCE LIMIT FOR IS:");
+    printf("\nENTER ACCEPTANCE LIMIT FOR IS:");
     scanf("%d", &pl.is_lim);
+    int ch;
+    printf("\n1.RESET APPLICATION COUNT:");
+    scanf("%d", &ch);
+
+    if (ch == 1)
+    {
+        pl.csgen_f = 0;
+        pl.csgen_m = 0;
+
+        pl.itgen_f = 0;
+        pl.itgen_m = 0;
+
+        pl.isgen_f = 0;
+        pl.isgen_m = 0;
+
+        pl.cs_accepted = 0;
+        pl.is_accepted = 0;
+        pl.it_accepted = 0;
+    }
 
     fwrite(&pl, sizeof(pl), 1, file_count);
-
     fclose(file_count);
 }
 
