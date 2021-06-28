@@ -441,9 +441,9 @@ void detailed_view(FILE *file, FILE *file_count)
             printf("\n| PROCESS APPLICATION                              |");
             printf("\n+--------------------------------------------------+");
             printf("\nEnter 1 to process:");
-            scanf("%s", appid);
+            system("pause");
 
-            accept(file, file_count, appid);
+            accept(file, file_count, a.id);
         }
         else
         {
@@ -461,7 +461,7 @@ void detailed_view(FILE *file, FILE *file_count)
 
 void accept(FILE *file, FILE *file_count, int app_id)
 {
-
+    printf("AID=%d", app_id);
     p_lim pl;
     APP a;
     int start_processing;
@@ -473,7 +473,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
     //file_count = fopen("LIMITS.bin", "rb+");
     rewind(file_count);
     rewind(file);
-    printf("AID=%d", id);
+
     while (fread(&pl, sizeof(pl), 1, file_count) == 1)
     {
         cs = pl.cs_lim;
@@ -486,7 +486,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
     while (fread(&a, sizeof(a), 1, file) == 1)
     {
 
-        if (a.id == id)
+        if (a.id == appid)
         {
             start_processing = 1;
 
