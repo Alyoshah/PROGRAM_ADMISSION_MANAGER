@@ -883,3 +883,4 @@ void create_limits(FILE *file_count)
 // https://www.tutorialspoint.com/c_standard_library/c_function_fwrite.htm
 // https://www.eecis.udel.edu/~sprenkle/cisc105/making_columns.html
 // https://fresh2refresh.com/c-programming/c-file-handling/fseek-seek_set-seek_cur-seek_end-functions-c/
+// https://www.delftstack.com/howto/c/read-binary-file-in-c/
