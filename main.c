@@ -22,6 +22,7 @@ void write_file(FILE *file);
 void detailed_view(FILE *file, FILE *file_count);
 void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
+void set_status();
 
 #define APP struct Form             // alias form as app
 #define p_lim struct program_limits // alias for program acceptance limits
@@ -445,6 +446,7 @@ void detailed_view(FILE *file, FILE *file_count)
                 strcpy(status_check[0], "APPLIED");
 
                 break;
+
             case 0:
                 strcpy(status_check[0], "NOT APPLIED");
 
@@ -477,20 +479,63 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
+            ////////////////////////////////////////////////////////
 
             switch (a.pstat.cs_approval)
             {
             case 1:
                 strcpy(approval_status[0], "ACCEPTED");
                 break;
-            case 0:
+            case 2:
                 strcpy(approval_status[0], "DENIED");
+                break;
+            case 0:
+                strcpy(approval_status[0], "PENDING");
+                break;
+            case 3:
+                strcpy(approval_status[0], "PENDING");
                 break;
 
             default:
                 break;
             }
+            switch (a.pstat.it_approval)
+            {
+            case 1:
+                strcpy(approval_status[1], "ACCEPTED");
+                break;
+            case 2:
+                strcpy(approval_status[1], "DENIED");
+                break;
+            case 0:
+                strcpy(approval_status[1], "PENDING");
+                break;
+            case 3:
+                strcpy(approval_status[1], "");
+                break;
 
+            default:
+                break;
+            }
+            switch (a.pstat.is_approval)
+            {
+            case 1:
+                strcpy(approval_status[2], "ACCEPTED");
+                break;
+            case 2:
+                strcpy(approval_status[2], "DENIED");
+                break;
+            case 0:
+                strcpy(approval_status[2], "PENDING");
+                break;
+            case 3:
+                strcpy(approval_status[2], "");
+                break;
+
+            default:
+                break;
+            }
+            ///////////////////////////////////////////////////
             // if (a.pstat.it_approval == 1)
             // {
 
@@ -511,15 +556,15 @@ void detailed_view(FILE *file, FILE *file_count)
             // }
 
             printf("\n");
-            printf("\n+==================================================+");
-            printf("\n| PROGRAM                 PROGRAM STATUS           |");
-            printf("\n+==================================================+");
-            printf("\n| CS                      %-20s %10s |", status_check[0], approval_status[0]);
-            printf("\n+--------------------------------------------------+");
-            printf("\n| IT                      %-20s      %-10d |", status_check[1], a.pstat.it_approval);
-            printf("\n+--------------------------------------------------+");
-            printf("\n| IS                      %-20s      %-10d |", status_check[2], a.pstat.is_approval);
-            printf("\n+--------------------------------------------------+");
+            printf("\n+==================================================================+");
+            printf("\n| PROGRAM       PROGRAM APPLICATION       APPLICATION STATUS       |");
+            printf("\n+==================================================================+");
+            printf("\n| CS            %-20s      %-20s     |", status_check[0], approval_status[0]);
+            printf("\n+------------------------------------------------------------------+");
+            printf("\n| IT            %-20s      %-20s     |", status_check[1], approval_status[1]);
+            printf("\n+------------------------------------------------------------------+");
+            printf("\n| IS            %-20s      %-20s     |", status_check[2], approval_status[2]);
+            printf("\n+------------------------------------------------------------------+");
             printf("\n\n");
             printf("\n+--------------------------------------------------+");
             printf("\n| OPTIONS                                          |");
@@ -646,24 +691,36 @@ void accept(FILE *file, FILE *file_count, int app_id)
         //printf("\nPassCount:%d", pass_count);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        //// ACCEPTANCE LOGIC
+        //// ACCEPTANCE
         ///////////////////////////////////////////////////////////////////////////////////////////////
         // NO PROGRAM CAN ACCEPT MORE THAN 20
-        if (a.sub_count < 5)
+
+        if (a.sub_count < 5 || a.age < 16) // DECLINE IF LESS THAN 5 SUBS
         {
             a.status = 3;
-
             if (a.pstat.cs == 1)
             {
-                a.pstat.cs_approval = 0;
+                a.pstat.cs_approval = 2;
+            }
+            else
+            {
+                a.pstat.cs_approval = 3;
             }
             if (a.pstat.it = 1)
             {
-                a.pstat.it_approval = 0;
+                a.pstat.it_approval = 2;
+            }
+            else
+            {
+                a.pstat.it_approval = 3;
             }
             if (a.pstat.is = 1)
             {
-                a.pstat.is_approval = 0;
+                a.pstat.is_approval = 2;
+            }
+            else
+            {
+                a.pstat.is_approval = 3;
             }
         }
 
@@ -673,7 +730,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
             applied_to_all = 1;
         }
 
-        else if (a.pstat.cs == 0 && a.pstat.it == 0 && a.pstat.is == 0) // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
+        if (a.pstat.cs == 0 && a.pstat.it == 0 && a.pstat.is == 0) // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
         {
             a.status = 0;
         }
@@ -683,6 +740,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
         {
             req_met = 1;
         }
+
         // set status here if requiremenets are met
         if (req_met == 1 && pl.cs_accepted < pl.cs_lim && a.pstat.cs == 1)
         {
