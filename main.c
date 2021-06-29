@@ -6,7 +6,7 @@
 
 // TODO:AUTO ACCEPT APPLICATIONS kinda works
 // TODO:SET FLAG FOR APPLICATION ACCEPTED
-// [x]COUNT MF ACCEPTED INTO PROGRAMS
+// TODO:COUNT MF ACCEPTED INTO PROGRAMS
 // TODO: SEPERATE MENU FOR APPLYING AND ADMINS
 // - [x] write to file
 // - [x] read from file
@@ -22,7 +22,6 @@ void write_file(FILE *file);
 void detailed_view(FILE *file, FILE *file_count);
 void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
-void set_status();
 
 #define APP struct Form             // alias form as app
 #define p_lim struct program_limits // alias for program acceptance limits
