@@ -440,6 +440,8 @@ void detailed_view(FILE *file, FILE *file_count)
             char status_check[3][20];
             char approval_status[3][20];
             // switch to set string
+
+            ///////////
             switch (a.pstat.cs)
             {
             case 1:
@@ -453,7 +455,7 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
-
+            /////////
             switch (a.pstat.it)
             {
             case 1:
@@ -466,7 +468,7 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
-
+            /////////
             switch (a.pstat.is)
             {
             case 1:
@@ -499,6 +501,8 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
+
+            /////
             switch (a.pstat.it_approval)
             {
             case 1:
@@ -517,6 +521,8 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
+
+            //////
             switch (a.pstat.is_approval)
             {
             case 1:
