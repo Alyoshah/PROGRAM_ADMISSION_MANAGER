@@ -4,11 +4,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-// TODO: say when limit for programs is met
+// TODO:cleanup
+// TODO:say when limit for programs is met
 // TODO:AUTO ACCEPT APPLICATIONS kinda works~
 // TODO:COUNT MF ACCEPTED INTO PROGRAMS
 
-// - [x]PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
+// - [x] PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
 // - [x] SEPERATE MENU FOR APPLYING AND ADMINS
 // - [x] write to file
 // - [x] read from file
