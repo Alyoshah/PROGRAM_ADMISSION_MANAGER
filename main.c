@@ -3,11 +3,11 @@
 #include <time.h>
 #include <stdlib.h>
 #include <ctype.h>
-// TODO:PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
+// - [x]PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
 // TODO:AUTO ACCEPT APPLICATIONS kinda works~
 // TODO:SET FLAG FOR APPLICATION ACCEPTED
 // TODO:COUNT MF ACCEPTED INTO PROGRAMS
-// TODO: SEPERATE MENU FOR APPLYING AND ADMINS
+// - [x] SEPERATE MENU FOR APPLYING AND ADMINS
 // - [x] write to file
 // - [x] read from file
 // - [x] read individual file info
@@ -20,11 +20,13 @@ FILE *file_count;
 void read_file(FILE *file);
 void write_file(FILE *file);
 void detailed_view(FILE *file, FILE *file_count);
-void create_limits(FILE *file_count);
+void create_limits();
 void accept(FILE *file, FILE *file_count, int app_id);
+void program_acceptance_details(FILE *file);
 
 #define APP struct Form             // alias form as app
 #define p_lim struct program_limits // alias for program acceptance limits
+
 // structs
 struct Birth // birth info
 {
@@ -73,11 +75,11 @@ struct Form // application form
 
 struct program_limits
 {
-    int cs_lim; // CS MAX APPLICATIONS
-    int it_lim; // IT MAX APPLICATIONS
-    int is_lim; // IS MAX APPLICATIONS
-    int cs_accepted, it_accepted, is_accepted;
-    int csgen_f, csgen_m;
+    int cs_lim;                                // CS MAX APPLICATIONS
+    int it_lim;                                // IT MAX APPLICATIONS
+    int is_lim;                                // IS MAX APPLICATIONS
+    int cs_accepted, it_accepted, is_accepted; // accepted to program of not
+    int csgen_f, csgen_m;                      // mf count
     int itgen_f, itgen_m;
     int isgen_f, isgen_m;
 };
@@ -85,7 +87,7 @@ struct program_limits
 // main
 int main()
 {
-    system("COLOR 2");
+    system("COLOR 2"); // set console color
 
     int choice;
     FILE *file;
@@ -107,69 +109,117 @@ int main()
             printf("\nFILE ERROR");
         }
     }
-
     while (1)
     {
+        // main loop
+        system("CLS");
 
-        // main menu loop
-        printf("\n+==================================================+");
-        printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
-        printf("\n+==================================================+");
-        printf("\n| ADMISSIONS MANAGER                               |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n\n");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| MENU                                             |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 1.APPLY                                          |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 2.READ ALL ENTRIES                               |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 3.VIEW AND PROCESS APPLICATION BY ID             |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 4.EXIT                                           |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 5.SET APPLICATION LIMITS                         |");
-        printf("\n+--------------------------------------------------+");
-
-        printf("\n\nChoice : ");
-
-        scanf("%d", &choice);
-        fflush(stdin);
-
-        switch (choice) // SWITCH CHOICE
+        while (1)
         {
-        case 1:
 
-            write_file(file);
-            break;
+            // main menu loop
+            printf("\n+==================================================+");
+            printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
+            printf("\n+==================================================+");
+            printf("\n| ADMISSIONS MANAGER                               |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| MENU                                             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 1.APPLY                                          |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 2.ADMIN MENU                                     |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 3.EXIT THE PROGRAM                               |");
+            printf("\n+--------------------------------------------------+");
 
-        case 2:
+            printf("\n\nChoice : ");
+            scanf("%d", &choice);
+            fflush(stdin);
 
-            read_file(file);
-            break;
+            if (choice == 1)
+            {
+                write_file(file);
+                break;
+            }
+            else if (choice == 2)
+            {
+                break;
+            }
 
-        case 3:
+            else if (choice == 3)
+            {
+                return 0;
+            }
 
-            detailed_view(file, file_count);
-            break;
+            else
+            {
+                continue;
+            }
+        }
 
-        case 4:
-            fclose(file);
-            return 0;
-            break;
+        while (1)
+        {
+            system("CLS");
+            // admin menu loop
+            printf("\n+==================================================+");
+            printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
+            printf("\n+==================================================+");
+            printf("\n| ADMISSIONS MANAGER                               |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| MENU                                             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 1.READ ALL ENTRIES                               |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 2.VIEW AND PROCESS APPLICATIONS BY ID            |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 3.VIEW ACCEPTED ALLICANTS BY PROGRAM             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 4.RETURN TO MAIN MENU                            |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 5.EXIT                                           |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 6.SET PROGRAM APPLICATION LIMITS                 |");
+            printf("\n+--------------------------------------------------+");
 
-        case 5:
-            create_limits(file_count);
-            break;
+            printf("\n\nChoice : ");
+            scanf("%d", &choice);
+            fflush(stdin);
 
-        default:
-            break;
+            if (choice == 1)
+            {
+                read_file(file);
+            }
+            else if (choice == 2)
+            {
+                detailed_view(file, file_count);
+            }
+            else if (choice == 6)
+            {
+                create_limits();
+            }
+            else if (choice == 4)
+            {
+                break;
+            }
+            else if (choice == 5)
+            {
+                return 0;
+            }
+            else if (choice == 3)
+            {
+                program_acceptance_details(file);
+            }
+
+            else
+            {
+                continue;
+            }
         }
     }
-
-    
-
     return 0;
 }
 
@@ -492,7 +542,7 @@ void detailed_view(FILE *file, FILE *file_count)
             switch (a.pstat.cs_approval)
             {
             case 0:
-                strcpy(approval_status[0], "PENDING");
+                strcpy(approval_status[0], "");
                 break;
 
             case 1:
@@ -503,7 +553,7 @@ void detailed_view(FILE *file, FILE *file_count)
                 break;
 
             case 3:
-                strcpy(approval_status[0], "PENDING");
+                strcpy(approval_status[0], "");
                 break;
 
             default:
@@ -520,7 +570,7 @@ void detailed_view(FILE *file, FILE *file_count)
                 strcpy(approval_status[1], "DENIED");
                 break;
             case 0:
-                strcpy(approval_status[1], "PENDING");
+                strcpy(approval_status[1], "");
                 break;
             case 3:
                 strcpy(approval_status[1], "");
@@ -540,7 +590,7 @@ void detailed_view(FILE *file, FILE *file_count)
                 strcpy(approval_status[2], "DENIED");
                 break;
             case 0:
-                strcpy(approval_status[2], "PENDING");
+                strcpy(approval_status[2], "");
                 break;
             case 3:
                 strcpy(approval_status[2], "");
@@ -549,25 +599,6 @@ void detailed_view(FILE *file, FILE *file_count)
             default:
                 break;
             }
-            ///////////////////////////////////////////////////
-            // if (a.pstat.it_approval == 1)
-            // {
-
-            //     strcpy(approval_status[1], "APPROVED");
-            // }
-            // else
-            // {
-            //     strcpy(approval_status[1], "");
-            // }
-            // if (a.pstat.is_approval == 1)
-            // {
-
-            //     strcpy(approval_status[2], "APPROVED");
-            // }
-            // else
-            // {
-            //     strcpy(approval_status[2], "");
-            // }
 
             printf("\n");
             printf("\n+==================================================================+");
@@ -580,28 +611,55 @@ void detailed_view(FILE *file, FILE *file_count)
             printf("\n| IS            %-20s      %-20s     |", status_check[2], approval_status[2]);
             printf("\n+------------------------------------------------------------------+");
             printf("\n\n");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| OPTIONS                                          |");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| 1. AUTOMATICALLY PROCESS APPLICATION             |");
-            printf("\n+--------------------------------------------------+");
-            printf("\n| 2. RETURN TO MAIN MENU                           |");
-            printf("\n+--------------------------------------------------+");
 
-            do
+            if (a.pstat.cs_approval != 0 || a.pstat.it_approval != 0 || a.pstat.is_approval != 0)
             {
-                printf("\nCHOICE : ");
-            } while (scanf("%d", &chce) != 1 || chce < 1 || chce > 2);
+                printf("\n+--------------------------------------------------+");
+                printf("\n| OPTIONS                                          |");
+                printf("\n+--------------------------------------------------+");
+                printf("\n| 1. RETURN TO MAIN MENU                           |");
+                printf("\n+--------------------------------------------------+");
 
-            if (chce == 1)
-            {
-                accept(file, file_count, a.id);
+                do
+                {
+                    printf("\nCHOICE : ");
+
+                } while (scanf("%d", &chce) != 1 || chce < 1 || chce > 2);
+
+                if (chce == 1)
+                {
+
+                    break;
+                }
             }
             else
             {
-                break;
+                printf("\n+--------------------------------------------------+");
+                printf("\n| OPTIONS                                          |");
+                printf("\n+--------------------------------------------------+");
+                printf("\n| 1. AUTOMATICALLY ACCEPT APPLICATION              |");
+                printf("\n+--------------------------------------------------+");
+                printf("\n| 2. RETURN TO MAIN MENU                           |");
+                printf("\n+--------------------------------------------------+");
+
+                do
+                {
+                    printf("\nCHOICE : ");
+
+                } while (scanf("%d", &chce) != 1 || chce < 1 || chce > 2);
+
+                if (chce == 1)
+                {
+                    accept(file, file_count, a.id);
+                    break;
+                }
+                else if (chce == 2)
+                {
+                    break;
+                }
             }
         }
+
         else
         {
             printf("\n+--------------------------------------------------+");
@@ -707,8 +765,8 @@ void accept(FILE *file, FILE *file_count, int app_id)
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //// ACCEPTANCE
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        // NO PROGRAM CAN ACCEPT MORE THAN 20
 
+        // NO PROGRAM CAN ACCEPT MORE THAN 20
         if (a.sub_count < 5 || a.age < 16) // DECLINE IF LESS THAN 5 SUBS
         {
             a.status = 3;
@@ -756,13 +814,13 @@ void accept(FILE *file, FILE *file_count, int app_id)
         }
 
         // set status here if requiremenets are met
-        if (req_met == 1 && pl.cs_accepted < pl.cs_lim && a.pstat.cs == 1)
+        if (req_met == 1 && (pl.cs_accepted < pl.cs_lim) && a.pstat.cs == 1)
         {
             a.status = 2;
             pl.cs_accepted++;
             a.pstat.cs_approval = 1;
 
-            if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0)
+            if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0) /// i should do this in a function
             {
                 pl.csgen_m++;
             }
@@ -771,7 +829,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
                 pl.csgen_f++;
             }
         }
-        if (req_met == 1 && pl.it_accepted < pl.it_lim && a.pstat.it == 1)
+        if (req_met == 1 && (pl.it_accepted < pl.it_lim) && a.pstat.it == 1)
         {
             a.status = 2;
             pl.it_accepted++;
@@ -786,7 +844,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
                 pl.itgen_f++;
             }
         }
-        if (req_met == 1 && pl.is_accepted < pl.is_lim && a.pstat.is == 1)
+        if (req_met == 1 && (pl.is_accepted < pl.is_lim) && a.pstat.is == 1)
         {
             a.status = 2;
             pl.is_accepted++;
@@ -834,8 +892,8 @@ void accept(FILE *file, FILE *file_count, int app_id)
     }
 }
 
-//func to set program limits
-void create_limits(FILE *file_count)
+// func to set program limits
+void create_limits()
 
 {
     if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
@@ -845,6 +903,7 @@ void create_limits(FILE *file_count)
             printf("\nFILE ERROR");
         }
     }
+
     p_lim pl;
     int plsiz = sizeof(pl);
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
@@ -885,6 +944,167 @@ void create_limits(FILE *file_count)
 
     fwrite(&pl, sizeof(pl), 1, file_count);
     fclose(file_count);
+}
+// print who got accepted to the prorams
+void program_acceptance_details(FILE *file)
+
+{
+    system("CLS");
+    while (1)
+    {
+        int ch;
+        printf("\n");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| MENU                                             |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 1.VIEW APPROVED CS APPLICANTS                    |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 2.VIEW APPROVED IT APPLICANTS                    |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 3.VIEW APPROVED IS APPLICANTS                    |");
+        printf("\n+--------------------------------------------------+");
+        printf("\n| 4.EXIT THIS MENU                                 |");
+        printf("\n+--------------------------------------------------+");
+
+        printf("\nCHOICE : ");
+
+        scanf("%d", &ch);
+        if (ch == 4)
+        {
+            break;
+        }
+
+        char a_status[20];
+        APP a;
+
+        fseek(file, 0, SEEK_SET); // READ FROM THE TOP OF THE FILE
+        printf("\n\b");
+        printf("+================================================================================================================================================+\n");
+        if (ch == 1)
+        {
+            printf("|COMPUTER SCIENCE - APPROVED APPLICANTS                                                                                                          |\n");
+        }
+        else if (ch == 2)
+        {
+            printf("|INFORMATION TECHNOLOGY - APPROVED APPLICANTS                                                                                                    |\n");
+        }
+        else if (ch == 3)
+        {
+            printf("|INFORMATION SYSTEMS - APPROVED APPLICANTS                                                                                                       |\n");
+        }
+
+        printf("+================================================================================================================================================+\n");
+        printf("|ID   NAME               DATE OF BIRTH       AGE                 GENDER              NO.SUBJECTS         STATUS              DATE APPLIED        |\n");
+        printf("+================================================================================================================================================+");
+
+        while (fread(&a, sizeof(a), 1, file) == 1)
+
+        { //insert logic to set status
+            // printf("\nSTATUS:%d", a.status);
+            if (ch == 1 && a.pstat.cs == 1 && a.pstat.cs_approval == 1)
+            {
+                /* code */
+
+                switch (a.status)
+                {
+                case 0:
+                    strcpy(a_status, "ERROR");
+                    break;
+                case 1:
+                    strcpy(a_status, "PENDING");
+                    break;
+
+                case 2:
+                    strcpy(a_status, "ACCEPTED");
+                    break;
+                case 3:
+                    strcpy(a_status, "DENIED");
+                    break;
+
+                default:
+                    break;
+                }
+
+                // convert date to strings
+                char a_date[20];
+                char b_date[20];
+
+                sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
+                sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
+                printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+                printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+            }
+
+            if (ch == 2 && a.pstat.it == 1 && a.pstat.it_approval == 1)
+            {
+                /* code */
+
+                switch (a.status)
+                {
+                case 0:
+                    strcpy(a_status, "ERROR");
+                    break;
+                case 1:
+                    strcpy(a_status, "PENDING");
+                    break;
+
+                case 2:
+                    strcpy(a_status, "ACCEPTED");
+                    break;
+                case 3:
+                    strcpy(a_status, "DENIED");
+                    break;
+
+                default:
+                    break;
+                }
+
+                // convert date to strings
+                char a_date[20];
+                char b_date[20];
+
+                sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
+                sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
+                printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+                printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+            }
+            if (ch == 3 && a.pstat.is == 1 && a.pstat.is_approval == 1)
+            {
+
+                switch (a.status)
+                {
+                case 0:
+                    strcpy(a_status, "ERROR"); // this should be a function but no time
+                    break;
+                case 1:
+                    strcpy(a_status, "PENDING");
+                    break;
+
+                case 2:
+                    strcpy(a_status, "ACCEPTED");
+                    break;
+                case 3:
+                    strcpy(a_status, "DENIED");
+                    break;
+
+                default:
+                    break;
+                }
+
+                // convert date to strings
+                char a_date[20];
+                char b_date[20];
+
+                sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
+                sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
+                printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+                printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+            }
+        }
+    }
 }
 
 // https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
