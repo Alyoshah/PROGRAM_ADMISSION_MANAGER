@@ -22,6 +22,7 @@ void write_file(FILE *file);
 void detailed_view(FILE *file, FILE *file_count);
 void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
+void program_acceptance_details(FILE *file);
 
 #define APP struct Form             // alias form as app
 #define p_lim struct program_limits // alias for program acceptance limits
@@ -107,69 +108,113 @@ int main()
             printf("\nFILE ERROR");
         }
     }
-
     while (1)
     {
+        // main loop
 
-        // main menu loop
-        printf("\n+==================================================+");
-        printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
-        printf("\n+==================================================+");
-        printf("\n| ADMISSIONS MANAGER                               |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n\n");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| MENU                                             |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 1.APPLY                                          |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 2.READ ALL ENTRIES                               |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 3.VIEW AND PROCESS APPLICATION BY ID             |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 4.EXIT                                           |");
-        printf("\n+--------------------------------------------------+");
-        printf("\n| 5.SET APPLICATION LIMITS                         |");
-        printf("\n+--------------------------------------------------+");
-
-        printf("\n\nChoice : ");
-
-        scanf("%d", &choice);
-        fflush(stdin);
-
-        switch (choice) // SWITCH CHOICE
+        while (1)
         {
-        case 1:
 
-            write_file(file);
-            break;
+            // main menu loop
+            printf("\n+==================================================+");
+            printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
+            printf("\n+==================================================+");
+            printf("\n| ADMISSIONS MANAGER                               |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| MENU                                             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 1.APPLY                                          |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 2.ADMIN MENU                                     |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 3.EXIT                                           |");
+            printf("\n+--------------------------------------------------+");
 
-        case 2:
+            printf("\n\nChoice : ");
+            scanf("%d", &choice);
+            fflush(stdin);
 
-            read_file(file);
-            break;
+            if (choice == 1)
+            {
+                write_file(file);
+                break;
+            }
+            else if (choice == 2)
+            {
+                break;
+            }
 
-        case 3:
+            else if (choice == 3)
+            {
+                return 0;
+            }
 
-            detailed_view(file, file_count);
-            break;
+            else
+            {
+                continue;
+            }
+        }
 
-        case 4:
-            fclose(file);
-            return 0;
-            break;
+        while (1)
+        {
+            // admin menu loop
+            printf("\n+==================================================+");
+            printf("\n| DEPARTMENT OF COMPUTER SCIENCE                   |");
+            printf("\n+==================================================+");
+            printf("\n| ADMISSIONS MANAGER                               |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| MENU                                             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 1.READ ALL ENTRIES                               |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 2.VIEW AND PROCESS APPLICATION BY ID             |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 3.SET PROGRAM APPLICATION LIMITS                 |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 4.RETURN TO MAIN MENU                            |");
+            printf("\n+--------------------------------------------------+");
+            printf("\n| 5.EXIT                                           |");
+            printf("\n+--------------------------------------------------+");
 
-        case 5:
-            create_limits(file_count);
-            break;
+            printf("\n\nChoice : ");
+            scanf("%d", &choice);
+            fflush(stdin);
 
-        default:
-            break;
+            if (choice == 1)
+            {
+                read_file(file);
+            }
+            else if (choice == 2)
+            {
+                detailed_view(file, file_count);
+            }
+            else if (choice == 3)
+            {
+                create_limits(file_count);
+            }
+            else if (choice == 4)
+            {
+                break;
+            }
+            else if (choice == 5)
+            {
+                return 0;
+            }
+            else if (choice == 6)
+            {
+                program_acceptance_details(file);
+            }
+
+            else
+            {
+                continue;
+            }
         }
     }
-
-    
-
     return 0;
 }
 
@@ -892,3 +937,47 @@ void create_limits(FILE *file_count)
 // https://www.eecis.udel.edu/~sprenkle/cisc105/making_columns.html
 // https://fresh2refresh.com/c-programming/c-file-handling/fseek-seek_set-seek_cur-seek_end-functions-c/
 // https://www.delftstack.com/howto/c/read-binary-file-in-c/
+void program_acceptance_details(FILE *file)
+{
+    char a_status[20];
+    APP a;
+    p_lim pl;
+
+    while (fread(&a, sizeof(a), 1, file) == 1)
+
+    { //insert logic to set status
+        // printf("\nSTATUS:%d", a.status);
+        if (a.pstat.cs_approval == 1)
+        {
+            switch (a.status)
+            {
+            case 0:
+                strcpy(a_status, "ERROR");
+                break;
+            case 1:
+                strcpy(a_status, "PENDING");
+                break;
+
+            case 2:
+                strcpy(a_status, "ACCEPTED");
+                break;
+            case 3:
+                strcpy(a_status, "DENIED");
+                break;
+
+            default:
+                break;
+            }
+
+            // convert date to strings
+            char a_date[20];
+            char b_date[20];
+
+            sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
+            sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
+            printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+            printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+            printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
+        }
+    }
+}
