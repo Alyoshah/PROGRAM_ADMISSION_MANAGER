@@ -3,14 +3,17 @@
 #include <time.h>
 #include <stdlib.h>
 #include <ctype.h>
-// - [x]PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
+
+// TODO: say when limit for programs is met
 // TODO:AUTO ACCEPT APPLICATIONS kinda works~
-// TODO:SET FLAG FOR APPLICATION ACCEPTED
 // TODO:COUNT MF ACCEPTED INTO PROGRAMS
+
+// - [x]PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
 // - [x] SEPERATE MENU FOR APPLYING AND ADMINS
 // - [x] write to file
 // - [x] read from file
 // - [x] read individual file info
+// - [x] SET FLAG FOR APPLICATION ACCEPTED
 
 // Program Admission Manager
 
