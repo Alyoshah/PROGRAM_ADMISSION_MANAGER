@@ -146,7 +146,6 @@ int main()
             if (choice == 1)
             {
                 write_file(file, file_count);
-                break;
             }
             else if (choice == 2)
             {
@@ -240,11 +239,15 @@ void write_file(FILE *file, FILE *file_count)
     int i;
 
     APP a;    // FORM -> APP -> A
-    p_lim pl; ///limits
+    p_lim pl; // limits
 
-    fread(&pl, sizeof(pl), 1, file_count); // read limit file
+    int plsiz = sizeof(pl); // size of struct pl
 
-    int tmpid = 100;
+    fread(&pl, sizeof(pl), 1, file_count); // read from LIMITS.BIN
+
+    fseek(file_count, -plsiz, SEEK_CUR); // write over data stores in LIMITS.BIN
+
+    int tmpid = 100; // count from 100
 
     while (fread(&a, sizeof(a), 1, file) == 1) // create an applicant id
 
@@ -359,17 +362,15 @@ void write_file(FILE *file, FILE *file_count)
     }
     /////////////////////////////////// testingn
     ///////////////////////////////////
-    printf("CS : %d\nIT : %d\nIS : %d\n", a.pstat.cs, a.pstat.it, a.pstat.is);
-    system("pause");
-    int cs_a = pl.cs_applied;
+
     ///////////////////////////
     if (a.pstat.cs == 1) // up count when applied
     {
-        pl.cs_applied = cs_a + 1;
+        pl.cs_applied = pl.cs_applied + 1;
     }
     else
     {
-        pl.cs_applied = cs_a;
+        pl.cs_applied = pl.cs_applied;
     }
     ///////////////////////////////////
     if (a.pstat.it == 1)
@@ -389,6 +390,9 @@ void write_file(FILE *file, FILE *file_count)
     {
         pl.is_applied = pl.is_applied;
     }
+
+    // printf("CS : %d\nIT : %d\nIS : %d\n", pl.cs_applied, pl.it_applied, pl.is_applied);
+    // system("pause");
 
     //////////////////////////////////
     a.pstat.cs_approval = 0, a.pstat.it_approval = 0, a.pstat.is_approval = 0; //set status
@@ -414,6 +418,7 @@ void write_file(FILE *file, FILE *file_count)
     }
 
     fwrite(&pl, sizeof(pl), 1, file_count); //write limit file
+
     if (fwrite != 0)
     { // print message if file written or not
 
@@ -427,6 +432,10 @@ void write_file(FILE *file, FILE *file_count)
         printf("\n| ERROR                                            |");
         printf("\n+--------------------------------------------------+");
     }
+    fclose(file_count);
+
+    printf("\n");
+    system("pause");
 }
 
 // read data from file
@@ -742,14 +751,6 @@ void detailed_view(FILE *file, FILE *file_count)
 
 void accept(FILE *file, FILE *file_count, int app_id)
 {
-    // printf("AID=%d", app_id);
-    // if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
-    // {
-    //     if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
-    //     {
-    //         printf("\nFILE ERROR");
-    //     }
-    // }
 
     rewind(file);
     rewind(file_count);
@@ -759,7 +760,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
     int start_processing;
     int cs, it, is;
-    int s = sizeof(a); //size of struct
+    int s = sizeof(a); // size of struct
     int p = sizeof(pl);
 
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
@@ -928,6 +929,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
                 pl.isgen_f++;
             }
         }
+
         //printf("\nCS - %d\nIT - %d\nIS - %d", cs_can_accept, it_can_accept, is_can_accept);
 
         //////////////////////////////////////////////////////////////////////
@@ -961,57 +963,6 @@ void accept(FILE *file, FILE *file_count, int app_id)
     }
 }
 
-// func to set program limits
-void create_limits(FILE *file_count)
-
-{
-    rewind(file_count);
-    p_lim pl;
-
-    int plsiz = sizeof(pl);
-
-    fread(&pl, sizeof(pl), 1, file_count);
-
-    fseek(file_count, -plsiz, SEEK_CUR);
-
-    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);
-    printf("\nCS aplied %d \nIT applied %d\nIS applied %d", pl.cs_applied, pl.it_applied, pl.it_applied);
-    // printf("\ncsm:%d\ncsf:%d\nitm:%d\nitf%d\nism:%d\nisf:%d", pl.csgen_m, pl.csgen_f, pl.itgen_m, pl.itgen_f, pl.isgen_m, pl.isgen_f);
-
-    printf("\nENTER ACCEPTANCE LIMIT FOR CS:");
-    scanf("%d", &pl.cs_lim);
-
-    printf("\nENTER ACCEPTANCE LIMIT FOR IT:");
-    scanf("%d", &pl.it_lim);
-
-    printf("\nENTER ACCEPTANCE LIMIT FOR IS:");
-    scanf("%d", &pl.is_lim);
-    int ch;
-    printf("\n1.RESET APPLICATION COUNT:");
-    scanf("%d", &ch);
-
-    if (ch == 1)
-    {
-        pl.csgen_f = 0;
-        pl.csgen_m = 0;
-
-        pl.itgen_f = 0;
-        pl.itgen_m = 0;
-
-        pl.isgen_f = 0;
-        pl.isgen_m = 0;
-
-        pl.cs_applied = 0;
-        pl.is_applied = 0;
-        pl.it_applied = 0;
-    }
-    else
-    {
-        printf("\nnothing reset");
-    }
-
-    fwrite(&pl, sizeof(pl), 1, file_count);
-}
 // print who got accepted to the prorams
 void program_acceptance_details(FILE *file)
 
@@ -1039,6 +990,7 @@ void program_acceptance_details(FILE *file)
         printf("\nCHOICE : ");
 
         scanf("%d", &ch);
+
         if (ch == 4)
         {
             break;
@@ -1173,6 +1125,67 @@ void program_acceptance_details(FILE *file)
             }
         }
     }
+}
+
+// func to set program limits
+void create_limits(FILE *file_count)
+
+{
+    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
+    {
+        if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
+        {
+            printf("\nFILE ERROR");
+        }
+    }
+
+    rewind(file_count);
+    p_lim pl;
+
+    int plsiz = sizeof(pl);
+
+    fread(&pl, sizeof(pl), 1, file_count);
+
+    fseek(file_count, -plsiz, SEEK_CUR);
+
+    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);
+    printf("\nCS aplied %d \nIT applied %d\nIS applied %d", pl.cs_applied, pl.it_applied, pl.it_applied);
+    // printf("\ncsm:%d\ncsf:%d\nitm:%d\nitf%d\nism:%d\nisf:%d", pl.csgen_m, pl.csgen_f, pl.itgen_m, pl.itgen_f, pl.isgen_m, pl.isgen_f);
+
+    printf("\nENTER ACCEPTANCE LIMIT FOR CS:");
+    scanf("%d", &pl.cs_lim);
+
+    printf("\nENTER ACCEPTANCE LIMIT FOR IT:");
+    scanf("%d", &pl.it_lim);
+
+    printf("\nENTER ACCEPTANCE LIMIT FOR IS:");
+    scanf("%d", &pl.is_lim);
+    int ch;
+    printf("\n1.RESET APPLICATION COUNT:");
+    scanf("%d", &ch);
+
+    if (ch == 1)
+    {
+        pl.csgen_f = 0;
+        pl.csgen_m = 0;
+
+        pl.itgen_f = 0;
+        pl.itgen_m = 0;
+
+        pl.isgen_f = 0;
+        pl.isgen_m = 0;
+
+        pl.cs_applied = 0;
+        pl.is_applied = 0;
+        pl.it_applied = 0;
+    }
+    else
+    {
+        printf("\nnothing reset");
+    }
+
+    fwrite(&pl, sizeof(pl), 1, file_count);
+    fclose(file_count);
 }
 
 // https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
