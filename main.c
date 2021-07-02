@@ -4,11 +4,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-// TODO: say when limit for programs is met
+// TODO:cleanup
+// TODO:say when limit for programs is met
 // TODO:AUTO ACCEPT APPLICATIONS kinda works~
 // TODO:COUNT MF ACCEPTED INTO PROGRAMS
 
-// - [x]PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
+// - [x] PRINT OUT WHO GO ACCEPTED TO WHAT PROGRAM
 // - [x] SEPERATE MENU FOR APPLYING AND ADMINS
 // - [x] write to file
 // - [x] read from file
@@ -17,13 +18,10 @@
 
 // Program Admission Manager
 
-FILE *file;
-FILE *file_count;
-
 void read_file(FILE *file);
-void write_file(FILE *file);
+void write_file(FILE *file, FILE *file_count);
 void detailed_view(FILE *file, FILE *file_count);
-void create_limits();
+void create_limits(FILE *file_count);
 void accept(FILE *file, FILE *file_count, int app_id);
 void program_acceptance_details(FILE *file);
 
@@ -78,11 +76,11 @@ struct Form // application form
 
 struct program_limits
 {
-    int cs_lim;                                // CS MAX APPLICATIONS
-    int it_lim;                                // IT MAX APPLICATIONS
-    int is_lim;                                // IS MAX APPLICATIONS
-    int cs_accepted, it_accepted, is_accepted; // accepted to program of not
-    int csgen_f, csgen_m;                      // mf count
+    int cs_lim;                             // CS MAX APPLICATIONS
+    int it_lim;                             // IT MAX APPLICATIONS
+    int is_lim;                             // IS MAX APPLICATIONS
+    int cs_applied, it_applied, is_applied; // count accepted to program
+    int csgen_f, csgen_m;                   // mf count
     int itgen_f, itgen_m;
     int isgen_f, isgen_m;
 };
@@ -92,10 +90,11 @@ int main()
 {
     system("COLOR 2"); // set console color
 
-    int choice;
     FILE *file;
     FILE *file_count;
+    int choice;
 
+    //////////
     if ((file = fopen("DB.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
     {
         if ((file = fopen("DB.bin", "wb+")) == NULL)
@@ -104,14 +103,17 @@ int main()
             return 0;
         }
     }
-
+    ////////
     if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
     {
         if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
         {
             printf("\nFILE ERROR");
+            return 0;
         }
     }
+    ////////
+
     while (1)
     {
         // main loop
@@ -143,7 +145,7 @@ int main()
 
             if (choice == 1)
             {
-                write_file(file);
+                write_file(file, file_count);
                 break;
             }
             else if (choice == 2)
@@ -202,7 +204,7 @@ int main()
             }
             else if (choice == 6)
             {
-                create_limits();
+                create_limits(file_count);
             }
             else if (choice == 4)
             {
@@ -228,16 +230,19 @@ int main()
 
 // write data to file
 
-void write_file(FILE *file)
+void write_file(FILE *file, FILE *file_count)
 {
+    rewind(file);
+    rewind(file_count);
     system("cls");
 
     int m, d, y;
     int i;
 
-    APP a; // FORM -> APP -> A
+    APP a;    // FORM -> APP -> A
+    p_lim pl; ///limits
 
-    rewind(file);
+    fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
     int tmpid = 100;
 
@@ -280,7 +285,7 @@ void write_file(FILE *file)
     fflush(stdin);
     a.address[strlen(a.address) - 1] = '\0'; // remove new line from buffer
 
-    printf("\n ENTER GENDER : ");
+    printf("\n ENTER GENDER M OR F : ");
     scanf("%c", &a.gender);
     fflush(stdin);
 
@@ -352,9 +357,63 @@ void write_file(FILE *file)
     {
         a.status = 0;
     }
-    a.pstat.cs_approval = 0, a.pstat.it_approval = 0, a.pstat.is_approval = 0;
+    /////////////////////////////////// testingn
+    ///////////////////////////////////
+    printf("CS : %d\nIT : %d\nIS : %d\n", a.pstat.cs, a.pstat.it, a.pstat.is);
+    system("pause");
+    int cs_a = pl.cs_applied;
+    ///////////////////////////
+    if (a.pstat.cs == 1) // up count when applied
+    {
+        pl.cs_applied = cs_a + 1;
+    }
+    else
+    {
+        pl.cs_applied = cs_a;
+    }
+    ///////////////////////////////////
+    if (a.pstat.it == 1)
+    {
+        pl.it_applied = pl.it_applied + 1;
+    }
+    else
+    {
+        pl.it_applied = pl.it_applied;
+    }
+    ///////////////////
+    if (a.pstat.is == 1)
+    {
+        pl.is_applied = pl.is_applied + 1;
+    }
+    else
+    {
+        pl.is_applied = pl.is_applied;
+    }
+
+    //////////////////////////////////
+    a.pstat.cs_approval = 0, a.pstat.it_approval = 0, a.pstat.is_approval = 0; //set status
+    ///////////////////////////////////////////////////////////////////////////////
+    // printf("\n cs applied %d \n it applied  %d \n is applied  %d", pl.cs_applied, pl.it_applied, pl.is_applied);
+    // system("pause");
+    ////////////////////////////////////////////////////////////////////////////////
+
     fwrite(&a, sizeof(a), 1, file); // write info to file
 
+    if (fwrite != 0)
+    { // print message if file written or not
+
+        printf("\n+--------------------------------------------------+");
+        printf("\n| DONE                                             |");
+        printf("\n+--------------------------------------------------+");
+    }
+    else
+    {
+        printf("\n+--------------------------------------------------+");
+        printf("\n| ERROR                                            |");
+        printf("\n+--------------------------------------------------+");
+    }
+
+    fwrite(&pl, sizeof(pl), 1, file_count); //write limit file
     if (fwrite != 0)
     { // print message if file written or not
 
@@ -377,7 +436,6 @@ void read_file(FILE *file)
     char a_status[20];
     APP a;
 
-    system("CLS");
     fseek(file, 0, SEEK_SET); // READ FROM THE TOP OF THE FILE
 
     printf("+================================================================================================================================================+\n");
@@ -430,12 +488,19 @@ void read_file(FILE *file)
 void detailed_view(FILE *file, FILE *file_count)
 {
     system("cls");
+
     char status[3][20];
     int found, i;
     int srch_id;
     int appid;
     int chce;
+
     APP a;
+    p_lim pl;
+
+    rewind(file);
+    rewind(file_count);
+    fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
     while (1)
     {
@@ -446,8 +511,6 @@ void detailed_view(FILE *file, FILE *file_count)
         printf("\n\nEnter ID : ");
         scanf("%d", &srch_id);
         fflush(stdin);
-
-        rewind(file);
 
         while (fread(&a, sizeof(a), 1, file) == 1)
         {
@@ -680,23 +743,26 @@ void detailed_view(FILE *file, FILE *file_count)
 void accept(FILE *file, FILE *file_count, int app_id)
 {
     // printf("AID=%d", app_id);
-    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
-    {
-        if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
-        {
-            printf("\nFILE ERROR");
-        }
-    }
+    // if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
+    // {
+    //     if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
+    //     {
+    //         printf("\nFILE ERROR");
+    //     }
+    // }
+
+    rewind(file);
+    rewind(file_count);
+
     p_lim pl;
     APP a;
+
     int start_processing;
     int cs, it, is;
     int s = sizeof(a); //size of struct
     int p = sizeof(pl);
 
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
-    rewind(file);
-    rewind(file_count);
 
     // printf("\n%d %d %d", cs, it, is);
 
@@ -817,10 +883,10 @@ void accept(FILE *file, FILE *file_count, int app_id)
         }
 
         // set status here if requiremenets are met
-        if (req_met == 1 && (pl.cs_accepted < pl.cs_lim) && a.pstat.cs == 1)
+        if (req_met == 1 && (pl.cs_applied < pl.cs_lim) && a.pstat.cs == 1)
         {
             a.status = 2;
-            pl.cs_accepted++;
+
             a.pstat.cs_approval = 1;
 
             if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0) /// i should do this in a function
@@ -832,10 +898,10 @@ void accept(FILE *file, FILE *file_count, int app_id)
                 pl.csgen_f++;
             }
         }
-        if (req_met == 1 && (pl.it_accepted < pl.it_lim) && a.pstat.it == 1)
+        if (req_met == 1 && (pl.it_applied < pl.it_lim) && a.pstat.it == 1)
         {
             a.status = 2;
-            pl.it_accepted++;
+
             a.pstat.it_approval = 1;
 
             if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0)
@@ -847,10 +913,10 @@ void accept(FILE *file, FILE *file_count, int app_id)
                 pl.itgen_f++;
             }
         }
-        if (req_met == 1 && (pl.is_accepted < pl.is_lim) && a.pstat.is == 1)
+        if (req_met == 1 && (pl.is_applied < pl.is_lim) && a.pstat.is == 1)
         {
             a.status = 2;
-            pl.is_accepted++;
+
             a.pstat.is_approval = 1;
 
             if (strcmp(a.gender, "m") == 0 || strcmp(a.gender, "M") == 0)
@@ -877,7 +943,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
         fwrite(&a, sizeof(a), 1, file); // write info to file
 
         fwrite(&pl, sizeof(pl), 1, file_count);
-        fclose(file_count);
+        // fclose(file_count);
 
         if (fwrite != 0)
         { // print message if file written or not
@@ -896,26 +962,21 @@ void accept(FILE *file, FILE *file_count, int app_id)
 }
 
 // func to set program limits
-void create_limits()
+void create_limits(FILE *file_count)
 
 {
-    if ((file_count = fopen("LIMITS.bin", "rb+")) == NULL) // create file if it doesn't exists or throw an error if it can't be created
-    {
-        if ((file_count = fopen("LIMITS.bin", "wb+")) == NULL)
-        {
-            printf("\nFILE ERROR");
-        }
-    }
-
+    rewind(file_count);
     p_lim pl;
-    int plsiz = sizeof(pl);
-    fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
-    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);
-    printf("\nCS ACCPTED %d \nIT ACCEPTED %d\nIS ACCEPTED %d", pl.cs_accepted, pl.it_accepted, pl.it_accepted);
-    printf("\ncsm:%d\ncsf:%d\nitm:%d\nitf%d\nism:%d\nisf:%d", pl.csgen_m, pl.csgen_f, pl.itgen_m, pl.itgen_f, pl.isgen_m, pl.isgen_f);
+    int plsiz = sizeof(pl);
+
+    fread(&pl, sizeof(pl), 1, file_count);
 
     fseek(file_count, -plsiz, SEEK_CUR);
+
+    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);
+    printf("\nCS aplied %d \nIT applied %d\nIS applied %d", pl.cs_applied, pl.it_applied, pl.it_applied);
+    // printf("\ncsm:%d\ncsf:%d\nitm:%d\nitf%d\nism:%d\nisf:%d", pl.csgen_m, pl.csgen_f, pl.itgen_m, pl.itgen_f, pl.isgen_m, pl.isgen_f);
 
     printf("\nENTER ACCEPTANCE LIMIT FOR CS:");
     scanf("%d", &pl.cs_lim);
@@ -940,19 +1001,25 @@ void create_limits()
         pl.isgen_f = 0;
         pl.isgen_m = 0;
 
-        pl.cs_accepted = 0;
-        pl.is_accepted = 0;
-        pl.it_accepted = 0;
+        pl.cs_applied = 0;
+        pl.is_applied = 0;
+        pl.it_applied = 0;
+    }
+    else
+    {
+        printf("\nnothing reset");
     }
 
     fwrite(&pl, sizeof(pl), 1, file_count);
-    fclose(file_count);
 }
 // print who got accepted to the prorams
 void program_acceptance_details(FILE *file)
 
 {
+    //fseek(file, 0, SEEK_SET); // READ FROM THE TOP OF THE FILE
+    rewind(file);
     system("CLS");
+
     while (1)
     {
         int ch;
@@ -980,7 +1047,6 @@ void program_acceptance_details(FILE *file)
         char a_status[20];
         APP a;
 
-        fseek(file, 0, SEEK_SET); // READ FROM THE TOP OF THE FILE
         printf("\n\b");
         printf("+================================================================================================================================================+\n");
         if (ch == 1)
@@ -1006,7 +1072,6 @@ void program_acceptance_details(FILE *file)
             // printf("\nSTATUS:%d", a.status);
             if (ch == 1 && a.pstat.cs == 1 && a.pstat.cs_approval == 1)
             {
-                /* code */
 
                 switch (a.status)
                 {
