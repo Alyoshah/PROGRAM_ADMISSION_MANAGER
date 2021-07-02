@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+// file pointer pass test
 #define num struct numbers
 #define ww struct wow
 struct numbers
