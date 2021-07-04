@@ -395,7 +395,7 @@ void write_file(FILE *file, FILE *file_count)
     // printf("CS : %d\nIT : %d\nIS : %d\n", pl.cs_applied, pl.it_applied, pl.is_applied);
     // system("pause");
 
-    //////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
     a.pstat.cs_approval = 0, a.pstat.it_approval = 0, a.pstat.is_approval = 0; //set status
     ///////////////////////////////////////////////////////////////////////////////
     // printf("\n cs applied %d \n it applied  %d \n is applied  %d", pl.cs_applied, pl.it_applied, pl.is_applied);
@@ -750,6 +750,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
     int cs, it, is;
     int s = sizeof(a); // size of struct
     int p = sizeof(pl);
+    int i,j;
 
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
@@ -782,7 +783,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
         int req_met;        // requirements met == 1 when subjects >5 pass >5 + eng and math
         int applied_to_all; // true if applicant applied to all programs
 
-        for (int i = 0; i < a.sub_count; i++)
+        for ( i = 0; i < a.sub_count; i++)
 
         {
 
@@ -790,7 +791,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
             //printf("\nin file:%s", sub);
 
-            for (int j = 0; sub[j]; j++)
+            for ( j = 0; sub[j]; j++)
             {
                 sub[j] = tolower(sub[j]); // make subject name lower case to compare it
                 // printf("\nconverted:%s", sub);
@@ -1033,8 +1034,7 @@ void program_acceptance_details(FILE *file)
 
             if (ch == 2 && a.pstat.it == 1 && a.pstat.it_approval == 1)
             {
-                /* code */
-
+                
                 switch (a.status)
                 {
                 case 0:
