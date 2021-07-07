@@ -6,3 +6,5 @@ C project
 - db.bin stores applicant info
 
 * acceptance logic starts from line 836
+
+* LIMITS MUST BE SET AND THE COUNT OF APPLICATIONS SHOULD BE RESET FIRST OR ELSE NOTHING WILL WORK!!
