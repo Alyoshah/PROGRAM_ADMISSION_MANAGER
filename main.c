@@ -887,7 +887,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
         }
         else
         {
-            a.status = 4;
+            a.status = 4; // just sets the status to program full
         }
 
         ///////////////////////////////////////////////////////////////////////////////
