@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-// TODO:cleanup
 // TODO:say when limit for programs is met
 // TODO:AUTO ACCEPT APPLICATIONS kinda works~
 // TODO:COUNT MF ACCEPTED INTO PROGRAMS
@@ -80,9 +79,9 @@ struct program_limits
     int it_lim; // IT MAX APPLICATIONS
     int is_lim; // IS MAX APPLICATIONS
 
-    int applied_for_cs;
-    int applied_for_it;
-    int applied_for_is; // count accepted to program
+    int accepted_for_cs;
+    int accepted_for_it;
+    int accepted_for_is; // count accepted to program
 };
 
 // main
@@ -345,15 +344,15 @@ void write_file(FILE *file, FILE *file_count)
 
     printf("\n APPLY FOR CS :");
     scanf("%d", &a.pstat.cs);
-    //fflush(stdin);
+    fflush(stdin);
 
     printf("\n APPLY FOR IT :");
     scanf("%d", &a.pstat.it);
-    //fflush(stdin);
+    fflush(stdin);
 
     printf("\n APPLY FOR IS :");
     scanf("%d", &a.pstat.is);
-    //fflush(stdin);
+    fflush(stdin);
 
     // set status on application
     if (a.pstat.cs == 1 || a.pstat.it == 1 || a.pstat.is == 1)
@@ -365,44 +364,13 @@ void write_file(FILE *file, FILE *file_count)
         a.status = 0;
     }
 
-    // --------------------------------------------------------------------------
-
-    if (a.pstat.cs == 1) // up count when applied
-    {
-        pl.applied_for_cs = pl.applied_for_cs + 1;
-    }
-    else
-    {
-        pl.applied_for_cs = pl.applied_for_cs;
-    }
-    // --------------------------------------------------------------------------
-    if (a.pstat.it == 1)
-    {
-        pl.applied_for_it = pl.applied_for_it + 1;
-    }
-    else
-    {
-        pl.applied_for_it = pl.applied_for_it;
-    }
-    // --------------------------------------------------------------------------
-    if (a.pstat.is == 1)
-    {
-        pl.applied_for_is = pl.applied_for_is + 1;
-    }
-    else
-    {
-        pl.applied_for_is = pl.applied_for_is;
-    }
-
     ///////////////////////////////////////////////////////////////////////////////
+
     a.pstat.cs_approval_status = 0;
     a.pstat.it_approval_status = 0;
     a.pstat.is_approval_status = 0; //set status
     ///////////////////////////////////////////////////////////////////////////////
 
-    // printf("\ncs applied %d \nit applied %d \nis applied %d", a.pstat.cs, a.pstat.it, a.pstat.is);
-    // printf("\n");
-    // system("pause");
     // --------------------------------------------------------------------------
     fwrite(&a, sizeof(a), 1, file); // write info to file
                                     // --------------------------------------------------------------------------
@@ -445,34 +413,33 @@ void read_file(FILE *file)
 
     {
         // a.status
-
         // 0 = error 1 = pending ,2 = accepted 3 ,= denied ,4 = full program
 
-        int status;
-        status = a.status;
+        //printf("\na.status %d\n", a.status);
 
-        if (status == 0)
+        if (a.status == 0)
         {
             strcpy(a_status, "ERROR");
         }
-        else if (status == 1)
+        else if (a.status == 1)
         {
             strcpy(a_status, "PENDING");
         }
-        else if (status == 2)
+        else if (a.status == 2)
         {
             strcpy(a_status, "ACCEPTED");
         }
-        else if (status == 3)
+        else if (a.status == 3)
         {
             strcpy(a_status, "DENIED");
         }
-        else if (status == 4)
+        else if (a.status == 4)
         {
             strcpy(a_status, "PGM FULL");
         }
 
         // convert date to strings
+
         char a_date[20];
         char b_date[20];
 
@@ -655,18 +622,6 @@ void detailed_view(FILE *file, FILE *file_count)
                 strcpy(approval_status[2], "");
             }
 
-            //test
-
-            //printf("\ncs%d it%d is%d\n", a.pstat.cs_approval_status, a.pstat.is_approval_status, a.pstat.is_approval_status); //TESTING
-            // printf("\ncs applied %d \nit applied %d \nis applied %d", a.pstat.cs, a.pstat.it, a.pstat.is);
-            // printf("\n");
-            // for (int i = 0; i < 2; i++)
-            // {
-            //     printf("\n%s\n", approval_status[i]);
-            // }
-
-            system("pause");
-
             printf("\n");
             printf("\n+==================================================================+");
             printf("\n| PROGRAM       PROGRAM APPLICATION       APPLICATION STATUS       |");
@@ -759,8 +714,6 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
-    // printf("\n%d %d %d", cs, it, is);
-
     while (fread(&a, sizeof(a), 1, file) == 1)
     {
 
@@ -794,18 +747,15 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
             strcpy(sub, a.subs[i].sname); // copy applicant sub name to var for comparison
 
-            //printf("\nin file:%s", sub);
-
             for (j = 0; sub[j]; j++)
             {
                 sub[j] = tolower(sub[j]); // make subject name lower case to compare it
-                // printf("\nconverted:%s", sub);
             }
 
             check1 = strstr(sub, math);
             if (check1 && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF MATHS IS FOUND AND GRADE IS 1-3 and set math_pass to 1
             {
-                // printf("\nFOUND %s GRADE :%d", math, a.subs[i].grade);
+
                 math_pass = 1;
             }
 
@@ -813,7 +763,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
 
             if (check2 && (a.subs[i].grade >= 1 && a.subs[i].grade <= 3)) // CHECK IF ENGLISH IS FOUND AND GRADE IS 1-3 and set eng_pass to 1
             {
-                // printf("\nFOUND %s GRADE :%d", english, a.subs[i].grade);
+
                 eng_pass = 1;
             }
 
@@ -838,35 +788,28 @@ void accept(FILE *file, FILE *file_count, int app_id)
         cs = a.pstat.cs;
         it = a.pstat.it;
         is = a.pstat.is;
-        ///
-        /// --------------------------------------------------------------------------
 
-        // printf("\nCS%d it%d IS %d\n", cs, it, is);
-        // system("pause");
+        /// --------------------------------------------------------------------------
 
         if (a.sub_count < 5 || a.age < 16 || pass_count < 5) // DECLINE IF LESS THAN 5 SUBS
         {
             a.status = 3; //3=denied
 
-            ///////////////////
             if (cs == 1)
             {
                 a.pstat.cs_approval_status = 3;
             }
 
-            //////////////////////
             if (it == 1)
             {
                 a.pstat.it_approval_status = 3;
             }
 
-            ///////////////
             if (is == 1)
             {
                 a.pstat.is_approval_status = 3;
             }
         }
-        ///
 
         // --------------------------------------------------------------------------
         if (cs == 1 && a.pstat.it == 1 && a.pstat.is == 1)
@@ -875,13 +818,6 @@ void accept(FILE *file, FILE *file_count, int app_id)
             applied_to_all = 1;
         }
         // --------------------------------------------------------------------------
-
-        if (cs == 0 && a.pstat.it == 0 && a.pstat.is == 0) // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
-        {
-            a.status = 0; // 0 means error when they fail to select a program
-        }
-        // --------------------------------------------------------------------------
-
         //check if all basic requirements are met to get accepted into all programs
         if (pass_count >= 5 && math_pass == 1 && eng_pass == 1 && a.age >= 16) // requirements for all three programs
         {
@@ -889,15 +825,21 @@ void accept(FILE *file, FILE *file_count, int app_id)
         }
         //--------------------------------------------------------------------------
 
-        // set status here if requiremenets are met
+        if (cs == 0 && a.pstat.it == 0 && a.pstat.is == 0) // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
+        {
+            a.status = 0; // 0 means error when they fail to select a program
+        }
+        // --------------------------------------------------------------------------
 
         // ACCEPT CS
 
         // ---------------
-        if (req_met == 1 && pl.applied_for_cs < pl.cs_lim && a.pstat.cs == 1) // pls. __ lim is the approval limit
+
+        if (req_met == 1 && (pl.accepted_for_cs < pl.cs_lim) && a.pstat.cs == 1) // pls. __ lim is the approval limit
         {
 
             a.pstat.cs_approval_status = 2;
+            pl.accepted_for_cs = pl.accepted_for_cs + 1;
         }
 
         //
@@ -907,13 +849,15 @@ void accept(FILE *file, FILE *file_count, int app_id)
             a.pstat.cs_approval_status = 4;
         }
 
-        //--------------------------------------------------------------------------
+        // //--------------------------------------------------------------------------
 
-        //ACCEPT IT
-        if (req_met == 1 && pl.applied_for_it < pl.it_lim && a.pstat.it == 1)
+        // //ACCEPT IT
+
+        if (req_met == 1 && (pl.accepted_for_it < pl.it_lim) && a.pstat.it == 1)
         {
 
             a.pstat.it_approval_status = 2;
+            pl.accepted_for_it = pl.accepted_for_it + 1;
         }
         else
         {
@@ -922,26 +866,42 @@ void accept(FILE *file, FILE *file_count, int app_id)
         }
         // --------------------------------------------------------------------------
 
-        // ACCEPT IS IS
-        if (req_met == 1 && pl.applied_for_is < pl.is_lim && a.pstat.is == 1)
+        // ACCEPT IS
+
+        if (req_met == 1 && (pl.accepted_for_is < pl.is_lim) && a.pstat.is == 1)
         {
 
             a.pstat.is_approval_status = 2;
+            pl.accepted_for_is = pl.accepted_for_is + 1;
         }
         else
         {
 
-            a.pstat.is_approval_status = 3;
+            a.pstat.is_approval_status = 4;
         }
-        // --------------------------------------------------------------------------
+        // // --------------------------------------------------------------------------
 
-        if (a.pstat.cs_approval_status == 1 || a.pstat.it_approval_status == 1 || a.pstat.is_approval_status == 1)
+        if (a.pstat.cs_approval_status == 2 || a.pstat.it_approval_status == 2 || a.pstat.is_approval_status == 2)
         {
             a.status = 2;
         }
+        else
+        {
+            a.status = 4;
+        }
 
+        ///////////////////////////////////////////////////////////////////////////////
         // --------------------------------------------------------------------------
-        fwrite(&a, sizeof(a), 1, file); // write info to file
+        fwrite(&a, sizeof(a), 1, file); // write info to file count
+
+        rewind(file_count);
+
+        int plsiz = sizeof(pl);
+
+        fseek(file_count, -plsiz, SEEK_CUR);
+
+        fwrite(&pl, sizeof(pl), 1, file_count);
+
         // --------------------------------------------------------------------------
         if (fwrite != 0)
         {
@@ -986,6 +946,7 @@ void program_acceptance_details(FILE *file)
         printf("\nCHOICE : ");
 
         scanf("%d", &ch);
+        system("cls");
 
         if (ch == 4)
         {
@@ -1013,35 +974,13 @@ void program_acceptance_details(FILE *file)
         printf("+================================================================================================================================================+\n");
         printf("|ID   NAME               DATE OF BIRTH       AGE                 GENDER              NO.SUBJECTS         STATUS              DATE APPLIED        |\n");
         printf("+================================================================================================================================================+");
-        // --------------------------------------------------------------------------
 
         rewind(file);
         while (fread(&a, sizeof(a), 1, file) == 1)
 
         {
-            if (ch == 1 && a.pstat.cs_approval_status == 1)
+            if (ch == 1 && a.pstat.cs_approval_status == 2)
             {
-
-                switch (a.status)
-                {
-                case 0:
-                    strcpy(a_status, "ERROR");
-                    break;
-                case 1:
-                    strcpy(a_status, "PENDING");
-                    break;
-
-                case 2:
-                    strcpy(a_status, "ACCEPTED");
-                    break;
-                case 3:
-                    strcpy(a_status, "DENIED");
-                    break;
-
-                default:
-                    break;
-                }
-
                 // convert date to strings
                 char a_date[20];
                 char b_date[20];
@@ -1049,32 +988,12 @@ void program_acceptance_details(FILE *file)
                 sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
                 sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
                 printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
-                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, "ACCEPTED", a_date);
                 printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
             }
 
-            if (ch == 2 && a.pstat.it_approval_status == 1)
+            if (ch == 2 && a.pstat.it_approval_status == 2)
             {
-
-                switch (a.status)
-                {
-                case 0:
-                    strcpy(a_status, "ERROR");
-                    break;
-                case 1:
-                    strcpy(a_status, "PENDING");
-                    break;
-
-                case 2:
-                    strcpy(a_status, "ACCEPTED");
-                    break;
-                case 3:
-                    strcpy(a_status, "DENIED");
-                    break;
-
-                default:
-                    break;
-                }
 
                 // convert date to strings
                 char a_date[20];
@@ -1083,31 +1002,11 @@ void program_acceptance_details(FILE *file)
                 sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
                 sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
                 printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
-                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, "ACCEPTED", a_date);
                 printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
             }
-            if (ch == 3 && a.pstat.is_approval_status == 1)
+            if (ch == 3 && a.pstat.is_approval_status == 2)
             {
-
-                switch (a.status)
-                {
-                case 0:
-                    strcpy(a_status, "ERROR"); // this should be a function but no time
-                    break;
-                case 1:
-                    strcpy(a_status, "PENDING");
-                    break;
-
-                case 2:
-                    strcpy(a_status, "ACCEPTED");
-                    break;
-                case 3:
-                    strcpy(a_status, "DENIED");
-                    break;
-
-                default:
-                    break;
-                }
 
                 // convert date to strings
                 char a_date[20];
@@ -1116,7 +1015,7 @@ void program_acceptance_details(FILE *file)
                 sprintf(a_date, "%i-%i-%i", a.app.year, a.app.month, a.app.day);
                 sprintf(b_date, "%d-%d-%d", a.dob.year, a.dob.month, a.dob.day);
                 printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
-                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, a_status, a_date);
+                printf("\n|%-5d%-20s%-20s%-19d%-20s%-20d%-20s%-20s|", a.id, a.name, b_date, a.age, a.gender, a.sub_count, "ACCEPTED", a_date);
                 printf("\n+------------------------------------------------------------------------------------------------------------------------------------------------+");
             }
         }
@@ -1145,8 +1044,8 @@ void create_limits(FILE *file_count)
 
     fseek(file_count, -plsiz, SEEK_CUR);
 
-    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);                                     // for testing
-    printf("\nCS aplied %d \nIT applied %d\nIS applied %d", pl.applied_for_cs, pl.applied_for_it, pl.applied_for_it); // for testing
+    printf("\nCSLIM %d \nITLIM %d \nISLIM %d ", pl.cs_lim, pl.it_lim, pl.is_lim);                                            // for testing
+    printf("\nCS ACCEPTED %d \nIT ACCEPTED %d\nIS ACCEPTED %d", pl.accepted_for_cs, pl.accepted_for_it, pl.accepted_for_it); // for testing
 
     printf("\nENTER ACCEPTANCE LIMIT FOR CS:");
     scanf("%d", &pl.cs_lim);
@@ -1157,15 +1056,15 @@ void create_limits(FILE *file_count)
     printf("\nENTER ACCEPTANCE LIMIT FOR IS:");
     scanf("%d", &pl.is_lim);
     int ch;
-    printf("\n1.RESET APPLICATION COUNT // 0 no :");
+    printf("\n1.RESET acceptance COUNT // 0 no :");
     scanf("%d", &ch);
 
     if (ch == 1)
     {
 
-        pl.applied_for_cs = 0;
-        pl.applied_for_is = 0;
-        pl.applied_for_it = 0;
+        pl.accepted_for_cs = 0;
+        pl.accepted_for_is = 0;
+        pl.accepted_for_it = 0;
     }
     else
     {

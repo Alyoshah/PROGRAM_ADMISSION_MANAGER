@@ -1,0 +1,16 @@
+a.status changes the  read all page status column
+
+
+
+
+
+0=error
+1=pending
+2=accepted
+3=denied
+4=full program
+
+
+
+
+
