@@ -437,6 +437,10 @@ void read_file(FILE *file)
         {
             strcpy(a_status, "PGM FULL");
         }
+        else if (a.status == 5)
+        {
+            strcpy(a_status, "1 PGM IS FULL");
+        }
 
         // convert date to strings
 
@@ -617,6 +621,7 @@ void detailed_view(FILE *file, FILE *file_count)
             {
                 strcpy(approval_status[2], "PGM FULL");
             }
+
             else
             {
                 strcpy(approval_status[2], "");
@@ -742,6 +747,11 @@ void accept(FILE *file, FILE *file_count, int app_id)
         int req_met = 0;        // requirements met == 1 when subjects >5 pass >5 + eng and math
         int applied_to_all = 0; // true if applicant applied to all programs
 
+        cs = a.pstat.cs;
+        it = a.pstat.it;
+        is = a.pstat.is;
+
+        // loop to check subjects and search for math and english
         for (i = 0; i < a.sub_count; i++)
 
         {
@@ -786,13 +796,28 @@ void accept(FILE *file, FILE *file_count, int app_id)
         //3=denied
         //4=full program
 
-        cs = a.pstat.cs;
-        it = a.pstat.it;
-        is = a.pstat.is;
-
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        if (cs == 1 && a.pstat.it == 1 && a.pstat.is == 1)
+        // set if the applicant applied to all
+        {
+            applied_to_all = 1;
+        }
         /// --------------------------------------------------------------------------
 
-        if (a.sub_count < 5 || a.age < 16 || pass_count < 5) // DECLINE IF LESS THAN 5 SUBS
+        if (a.sub_count < 5 || a.age < 16 || pass_count < 5)
+        {
+            req_met = 0;
+        } // DECLINE IF LESS THAN 5 SUBS
+          // --------------------------------------------------------------------------
+
+        // --------------------------------------------------------------------------
+        //check if all basic requirements are met to get accepted into all programs
+        if (pass_count >= 5 && math_pass == 1 && eng_pass == 1 && a.age >= 16) // requirements for all three programs
+        {
+            req_met = 1;
+        }
+
+        if (req_met == 0) // if req is not met deny
         {
             a.status = 3; //3=denied
 
@@ -811,87 +836,81 @@ void accept(FILE *file, FILE *file_count, int app_id)
                 a.pstat.is_approval_status = 3;
             }
         }
-
-        // --------------------------------------------------------------------------
-        if (cs == 1 && a.pstat.it == 1 && a.pstat.is == 1)
-        // set if the applicant applied to all
-        {
-            applied_to_all = 1;
-        }
-        // --------------------------------------------------------------------------
-        //check if all basic requirements are met to get accepted into all programs
-        if (pass_count >= 5 && math_pass == 1 && eng_pass == 1 && a.age >= 16) // requirements for all three programs
-        {
-            req_met = 1;
-        }
-        //--------------------------------------------------------------------------
-
-        if (cs == 0 && a.pstat.it == 0 && a.pstat.is == 0) // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
+        // IF THEY FAILED TO SELECT A PROGRAM TO APPLY FOR
+        if (req_met == 0 && cs == 0 && a.pstat.it == 0 && a.pstat.is == 0)
         {
             a.status = 0; // 0 means error when they fail to select a program
         }
-        // --------------------------------------------------------------------------
 
-        // ACCEPT CS
-
-        // ---------------
-
-        if (req_met == 1 && (pl.accepted_for_cs < pl.cs_lim) && a.pstat.cs == 1) // pls. __ lim is the approval limit
+        if (req_met == 1)
         {
 
-            a.pstat.cs_approval_status = 2;
-            pl.accepted_for_cs = pl.accepted_for_cs + 1;
+            // ACCEPT CS
+            if (pl.accepted_for_cs < pl.cs_lim) // if cs is not full
+            {
+                if (a.pstat.cs == 1) // pls. __ lim is the approval limit
+                {
+                    a.pstat.cs_approval_status = 2;
+                    pl.accepted_for_cs = pl.accepted_for_cs + 1;
+                }
+            }
+            else
+            {
+                a.pstat.cs_approval_status = 4;
+            }
+
+            // //ACCEPT IT
+
+            if (pl.accepted_for_it < pl.it_lim) // if it is not full
+            {
+                if (a.pstat.it == 1)
+                {
+                    a.pstat.it_approval_status = 2;
+                    pl.accepted_for_it = pl.accepted_for_it + 1;
+                }
+            }
+            else
+            {
+
+                a.pstat.it_approval_status = 4; // full is 4
+            }
+            // --------------------------------------------------------------------------
+
+            // ACCEPT IS
+            if (pl.accepted_for_is < pl.is_lim) // if is is not full
+            {
+                /* code */
+
+                if (a.pstat.is == 1)
+                {
+                    a.pstat.is_approval_status = 2;
+                    pl.accepted_for_is = pl.accepted_for_is + 1;
+                }
+            }
+
+            else
+            {
+
+                a.pstat.is_approval_status = 4;
+            }
+
+            // set status if person is approved for atleast one program
+            if (a.pstat.cs_approval_status == 2 || a.pstat.it_approval_status == 2 || a.pstat.is_approval_status == 2)
+            {
+                a.status = 2;
+            }
+
+            // if atleast one program they applied to is full
+            if (a.pstat.cs_approval_status == 4 || a.pstat.it_approval_status == 4 || a.pstat.is_approval_status == 4)
+            {
+                a.status = 5;
+            }
         }
 
-        //
-        else
-        {
-
-            a.pstat.cs_approval_status = 4;
-        }
-
-        // //--------------------------------------------------------------------------
-
-        // //ACCEPT IT
-
-        if (req_met == 1 && (pl.accepted_for_it < pl.it_lim) && a.pstat.it == 1)
-        {
-
-            a.pstat.it_approval_status = 2;
-            pl.accepted_for_it = pl.accepted_for_it + 1;
-        }
-        else
-        {
-
-            a.pstat.it_approval_status = 4; // full is 4
-        }
-        // --------------------------------------------------------------------------
-
-        // ACCEPT IS
-
-        if (req_met == 1 && (pl.accepted_for_is < pl.is_lim) && a.pstat.is == 1)
-        {
-
-            a.pstat.is_approval_status = 2;
-            pl.accepted_for_is = pl.accepted_for_is + 1;
-        }
-        else
-        {
-
-            a.pstat.is_approval_status = 4;
-        }
-        // // --------------------------------------------------------------------------
-
-        if (a.pstat.cs_approval_status == 2 || a.pstat.it_approval_status == 2 || a.pstat.is_approval_status == 2)
-        {
-            a.status = 2;
-        }
-        else
-        {
-            a.status = 4; // just sets the status to program full
-        }
-
-        ///////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////
+        printf("\nA.STATUS = %d\n\n", a.status);
+        system("pause");
+        //////////////////////////////////////////
         // --------------------------------------------------------------------------
         fwrite(&a, sizeof(a), 1, file); // write info to file count
 
