@@ -701,7 +701,6 @@ void accept(FILE *file, FILE *file_count, int app_id)
 {
 
     rewind(file);
-    rewind(file_count);
 
     p_lim pl;
     APP a;
@@ -712,6 +711,8 @@ void accept(FILE *file, FILE *file_count, int app_id)
     int p = sizeof(pl);
     int i, j;
 
+    file_count = fopen("LIMITS.bin", "rb+");
+    rewind(file_count);
     fread(&pl, sizeof(pl), 1, file_count); // read limit file
 
     while (fread(&a, sizeof(a), 1, file) == 1)
@@ -901,6 +902,7 @@ void accept(FILE *file, FILE *file_count, int app_id)
         fseek(file_count, -plsiz, SEEK_CUR);
 
         fwrite(&pl, sizeof(pl), 1, file_count);
+        fclose(file_count);
 
         // --------------------------------------------------------------------------
         if (fwrite != 0)
